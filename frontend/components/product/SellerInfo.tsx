@@ -1,15 +1,6 @@
 import React from "react";
 import { User, Star } from "lucide-react";
-
-interface Seller {
-  id: number;
-  name: string;
-  rating: number;
-  reviews: number;
-  location: string;
-  contact_email: string;
-  contact_phone: string;
-}
+import { Seller } from "./../../types/seller";
 
 const SellerInfo: React.FC<{ seller: Seller }> = ({ seller }) => {
   return (
@@ -20,7 +11,7 @@ const SellerInfo: React.FC<{ seller: Seller }> = ({ seller }) => {
           <User className="w-6 h-6 text-gray-500" />
         </div>
         <div>
-          <h4 className="font-medium text-gray-900">{seller?.name}</h4>
+          <h4 className="font-medium text-gray-900">{seller?.business_name}</h4>
           <div className="flex items-center gap-2 mt-1">
             <Star className="w-4 h-4 text-yellow-400 fill-current" />
             <span className="text-sm text-gray-600">{seller?.rating}</span>

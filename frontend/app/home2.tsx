@@ -4,38 +4,28 @@ import Header from "@/components/common/Header";
 import ProductsGrid from "@/components/common/ProductsGrid";
 import { Filter } from "lucide-react";
 import { useEffect, useState } from "react";
-interface Product {
-  id: number;
-  title: string;
-  seller: string;
-  rating: number;
-  reviewCount: number;
-  location: string;
-  price: number;
-  priceUnit?: string;
-  image: string;
-  hasOffer?: boolean;
-  offerText?: string;
-  isFavorited?: boolean;
-}
 
 const Home: React.FC = () => {
   const [showFilters, setShowFilters] = useState(false);
-  const [products, setProducts] = useState([]);
+  const [listings, setListings] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await fetch("http://localhost:8080/products");
+        const response = await fetch("http://localhost:8080/listings/all");
         const data = await response.json();
-        setProducts(data);
+        setListings(data.listings);
       } catch (error) {
         console.error("Error fetching products:", error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
     fetchProducts();
   }, []);
+  console.log(listings);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -109,7 +99,7 @@ const Home: React.FC = () => {
           </div>
         )}
 
-        <ProductsGrid products={products} />
+        <ProductsGrid listings={listings} isLoading={isLoading} />
       </main>
 
       <Footer />
