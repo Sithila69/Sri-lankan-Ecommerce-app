@@ -4,28 +4,7 @@ import { ArrowLeft, Plus, Minus, CheckCircle } from "lucide-react";
 import ProductDetails from "./ProductDetails";
 import SellerInfo from "./SellerInfo";
 
-interface Product {
-  id: number;
-  name: string;
-  category: string;
-  type: string;
-  price: number;
-  currency: string;
-  location: string;
-  rating: number;
-  reviews: number;
-  image: string;
-  seller: string;
-  description: string;
-  sellerRating: number;
-  sellerReviews: number;
-  availability: string;
-  deliveryTime?: string;
-  serviceTime?: string;
-  features: string[];
-  stock: number;
-  pricing?: string;
-}
+import { Product } from "@/types";
 
 interface ProductPageProps {
   currentView: string;
@@ -78,7 +57,7 @@ const ProductPage: React.FC<ProductPageProps> = ({
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <div className="bg-white rounded-lg shadow-sm overflow-hidden">
             <img
-              src={selectedProduct.image}
+              src={selectedProduct.img_url}
               alt={selectedProduct.name}
               className="w-full h-96 object-cover"
             />

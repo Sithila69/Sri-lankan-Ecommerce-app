@@ -1,32 +1,77 @@
 "use client";
-import React from "react";
-import { ArrowLeft, Minus, Plus, Trash2 } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { ArrowLeft, Minus, Plus, Trash2, ShoppingBag } from "lucide-react";
 import Header from "@/components/common/Header";
 import Footer from "@/components/common/Footer";
-
-interface CartItem {
-  id: number;
-  title: string;
-  seller: string;
-  price: number;
-  priceUnit?: string;
-  image: string;
-  quantity: number;
-}
+import Breadcrumb from "@/components/common/Breadcrumb";
+import {
+  getCart,
+  updateQuantity,
+  removeFromCart,
+  clearCart,
+  CartItem,
+} from "@/utils/cart";
+import Link from "next/link";
 
 interface ShoppingCartPageProps {
-  cartItems: CartItem[];
-  onUpdateQuantity: (id: number, newQuantity: number) => void;
-  onRemove: (id: number) => void;
   onContinueShopping: () => void;
 }
 
 const ShoppingCartPage: React.FC<ShoppingCartPageProps> = ({
-  cartItems = [],
-  onUpdateQuantity,
-  onRemove,
   onContinueShopping,
 }) => {
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Load cart items
+  useEffect(() => {
+    const loadCartItems = () => {
+      try {
+        const items = getCart();
+        setCartItems(items);
+      } catch (error) {
+        console.error("Failed to load cart items:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadCartItems();
+  }, []);
+
+  const handleUpdateQuantity = (
+    productId: string,
+    newQuantity: number,
+    stockAvailable: number
+  ) => {
+    if (newQuantity < 1) return;
+
+    const success = updateQuantity(productId, newQuantity, stockAvailable);
+    if (success) {
+      setCartItems((prev) =>
+        prev.map((item) =>
+          item.product_id === productId
+            ? { ...item, quantity: newQuantity }
+            : item
+        )
+      );
+    } else {
+      alert("Not enough stock available");
+    }
+  };
+
+  const handleRemove = (productId: string) => {
+    removeFromCart(productId);
+    setCartItems((prev) =>
+      prev.filter((item) => item.product_id !== productId)
+    );
+  };
+
+  const handleClearCart = () => {
+    clearCart();
+    setCartItems([]);
+  };
+
   // Calculate order summary
   const subtotal = cartItems.reduce(
     (sum, item) => sum + (item?.price || 0) * (item?.quantity || 0),
@@ -46,159 +91,204 @@ const ShoppingCartPage: React.FC<ShoppingCartPageProps> = ({
     }
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-white">
+        <Header />
+        <div className="min-h-screen bg-white flex items-center justify-center">
+          <div className="text-center">
+            <div className="w-8 h-8 border-2 border-black border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading your cart...</p>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white">
       <Header />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
-          <button className="flex items-center gap-2 text-gray-600 hover:text-black">
-            <ArrowLeft className="w-5 h-5" />
-            Continue Shopping
-          </button>
-          <h1 className="text-2xl font-bold text-gray-900">Shopping Cart</h1>
+          <Breadcrumb />
+          {/* <button
+            onClick={onContinueShopping}
+            className="flex items-center space-x-2 text-gray-600 hover:text-black transition-colors group mb-4"
+          >
+            <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+            <span className="font-medium">Continue Shopping</span>
+          </button> */}
+          <div className="flex items-center space-x-3 mb-6">
+            <ShoppingBag className="w-7 h-7 text-black" />
+            <h1 className="text-3xl font-bold text-gray-900">Shopping Cart</h1>
+          </div>
         </div>
 
-        {/* Main Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Cart Items Section */}
-          <div className="lg:col-span-2">
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-              <div className="p-6 border-b border-gray-200">
-                <h2 className="text-lg font-semibold text-gray-900">
-                  Cart Items ({totalItems})
-                </h2>
-              </div>
+        {cartItems.length === 0 ? (
+          // Empty Cart State
+          <div className="text-center py-16">
+            <div className="w-24 h-24 mx-auto mb-6 bg-gray-100 rounded-full flex items-center justify-center">
+              <ShoppingBag className="w-12 h-12 text-gray-400" />
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              Your cart is empty
+            </h2>
+            <p className="text-gray-500 mb-8">Add some items to get started</p>
+            <Link href={"/"}>
+              <button
+                onClick={onContinueShopping}
+                className="bg-black text-white px-8 py-3 rounded-lg font-medium hover:bg-gray-800 transition-colors"
+              >
+                Start Shopping
+              </button>
+            </Link>
+          </div>
+        ) : (
+          // Cart with Items
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Cart Items */}
+            <div className="lg:col-span-2">
+              <div className="bg-white">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-xl font-bold text-gray-900">
+                    Cart Items ({totalItems})
+                  </h2>
+                  <button
+                    onClick={handleClearCart}
+                    className="text-gray-400 hover:text-red-500 transition-colors text-sm font-medium"
+                  >
+                    Clear All
+                  </button>
+                </div>
 
-              {cartItems.length > 0 ? (
-                <div className="p-6">
+                <div className="space-y-4">
                   {cartItems.map((item) => (
                     <div
-                      key={item.id}
-                      className="flex items-center justify-between py-4 border-b border-gray-200"
+                      key={item.product_id}
+                      className="group bg-white border border-gray-100 rounded-xl p-6 hover:shadow-lg transition-all duration-200"
                     >
-                      {/* Product Info */}
-                      <div className="flex items-center space-x-4">
-                        <img
-                          src={item?.image || "/placeholder-image.jpg"}
-                          alt={item?.title || "Product image"}
-                          className="w-16 h-16 object-cover rounded-lg"
-                        />
-                        <div className="flex-1">
-                          <h3 className="font-medium text-gray-900">
-                            {item?.title || "Untitled Product"}
+                      <div className="flex items-start space-x-4">
+                        {/* Product Image */}
+                        <div className="relative">
+                          <img
+                            src={item?.image_url || "/placeholder-image.jpg"}
+                            alt={item?.name || "Product image"}
+                            className="w-20 h-20 object-cover rounded-lg"
+                          />
+                        </div>
+
+                        {/* Product Info */}
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-semibold text-gray-900 text-lg mb-1">
+                            {item?.name || "Untitled Product"}
                           </h3>
-                          <p className="text-sm text-gray-600">
-                            {item?.seller || "Unknown Seller"}
+                          <p className="text-sm text-gray-500 mb-3">
+                            Sold by {item?.seller || "Unknown Seller"}
                           </p>
-                          <div className="text-sm font-medium text-gray-900 mt-1">
-                            LKR {(item?.price || 0).toLocaleString()}
-                            {item?.priceUnit && (
-                              <span className="text-gray-500 font-normal">
-                                {" "}
-                                {item.priceUnit}
-                              </span>
-                            )}
+                          <div className="flex items-center justify-between">
+                            <div className="text-xl font-bold text-gray-900">
+                              LKR {(item?.price || 0).toLocaleString()}
+                            </div>
+
+                            {/* Quantity Controls */}
+                            <div className="flex items-center space-x-3">
+                              <div className="flex items-center border border-gray-200 rounded-lg">
+                                <button
+                                  onClick={() => {
+                                    if (item.quantity > 1) {
+                                      handleUpdateQuantity(
+                                        item.product_id,
+                                        item.quantity - 1,
+                                        item.stock
+                                      );
+                                    }
+                                  }}
+                                  className="w-10 h-10 flex items-center justify-center hover:bg-gray-50 transition-colors rounded-l-lg"
+                                >
+                                  <Minus className="w-4 h-4 text-gray-600" />
+                                </button>
+                                <span className="w-12 text-center font-semibold text-gray-900 border-x border-gray-200">
+                                  {item?.quantity || 0}
+                                </span>
+                                <button
+                                  onClick={() =>
+                                    handleUpdateQuantity(
+                                      item.product_id,
+                                      item.quantity + 1,
+                                      item.stock
+                                    )
+                                  }
+                                  className="w-10 h-10 flex items-center justify-center hover:bg-gray-50 transition-colors rounded-r-lg"
+                                >
+                                  <Plus className="w-4 h-4 text-gray-600" />
+                                </button>
+                              </div>
+
+                              <button
+                                onClick={() => handleRemove(item.product_id)}
+                                className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
                           </div>
                         </div>
-                      </div>
-
-                      {/* Quantity Controls */}
-                      <div className="flex items-center space-x-4">
-                        <div className="flex items-center space-x-2">
-                          <button
-                            onClick={() => {
-                              if (item.quantity > 1) {
-                                onUpdateQuantity(item.id, item.quantity - 1);
-                              }
-                            }}
-                            className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-50 transition-colors"
-                          >
-                            <Minus className="w-4 h-4 text-gray-600" />
-                          </button>
-                          <span className="w-8 text-center font-medium">
-                            {item?.quantity || 0}
-                          </span>
-                          <button
-                            onClick={() =>
-                              onUpdateQuantity(item.id, item.quantity + 1)
-                            }
-                            className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-50 transition-colors"
-                          >
-                            <Plus className="w-4 h-4 text-gray-600" />
-                          </button>
-                        </div>
-
-                        <button
-                          onClick={() => onRemove(item.id)}
-                          className="text-gray-400 hover:text-red-500 transition-colors"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
                       </div>
                     </div>
                   ))}
                 </div>
-              ) : (
-                <div className="p-6 text-center">
-                  <p className="text-gray-500">Your cart is empty</p>
-                  <button
-                    onClick={onContinueShopping}
-                    className="mt-4 text-blue-600 hover:text-blue-700 transition-colors"
-                  >
-                    Continue Shopping
-                  </button>
-                </div>
-              )}
+              </div>
             </div>
-          </div>
 
-          {/* Order Summary Section */}
-          <div className="lg:col-span-1">
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">
-                Order Summary
-              </h2>
+            {/* Order Summary */}
+            <div className="lg:col-span-1">
+              <div className="bg-gray-50 rounded-xl p-6 sticky top-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-6">
+                  Order Summary
+                </h2>
 
-              <div className="space-y-3">
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">
-                    Subtotal ({totalItems} items)
-                  </span>
-                  <span className="text-gray-900">
-                    LKR {subtotal.toLocaleString()}
-                  </span>
-                </div>
-
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Delivery Fee</span>
-                  <span className="text-gray-900">
-                    {deliveryFee === 0
-                      ? "Free"
-                      : `LKR ${deliveryFee.toLocaleString()}`}
-                  </span>
-                </div>
-
-                <div className="border-t border-gray-200 pt-3">
-                  <div className="flex justify-between font-semibold text-lg">
-                    <span className="text-gray-900">Total</span>
-                    <span className="text-gray-900">
-                      LKR {total.toLocaleString()}
+                <div className="space-y-4 mb-6">
+                  <div className="flex justify-between text-gray-600">
+                    <span>Subtotal ({totalItems} items)</span>
+                    <span className="font-semibold">
+                      LKR {subtotal.toLocaleString()}
                     </span>
                   </div>
+
+                  <div className="flex justify-between text-gray-600">
+                    <span>Delivery Fee</span>
+                    <span className="font-semibold text-green-600">Free</span>
+                  </div>
+
+                  <div className="border-t border-gray-200 pt-4">
+                    <div className="flex justify-between text-xl font-bold text-gray-900">
+                      <span>Total</span>
+                      <span>LKR {total.toLocaleString()}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <button
+                  onClick={handleProceedToCheckout}
+                  className="w-full bg-black text-white py-4 px-6 rounded-lg font-semibold hover:bg-gray-800 transition-colors text-lg"
+                  disabled={totalItems === 0}
+                >
+                  {totalItems > 0 ? "Proceed to Checkout" : "Cart is Empty"}
+                </button>
+
+                <div className="mt-4 text-center">
+                  <p className="text-sm text-gray-500">
+                    Free shipping on all orders
+                  </p>
                 </div>
               </div>
-
-              <button
-                onClick={handleProceedToCheckout}
-                className="w-full mt-6 bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 transition-colors"
-                disabled={totalItems === 0}
-              >
-                {totalItems > 0 ? "Proceed to Checkout" : "Cart is Empty"}
-              </button>
             </div>
           </div>
-        </div>
+        )}
       </div>
+
       <Footer />
     </div>
   );

@@ -4,5 +4,5 @@ import HomeComponent from "./home2";
 import EcommerceApp from "./home";
 
 export default async function Home() {
-  return <EcommerceApp />;
+  return <HomeComponent />;
 }
