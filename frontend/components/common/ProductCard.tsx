@@ -9,18 +9,19 @@ import {
   Calendar,
 } from "lucide-react";
 import { useState } from "react";
+import Tooltip from "./Tooltip";
 
 const ProductCard: React.FC<{ listing: Listing }> = ({ listing }) => {
   const [isFavorited, setIsFavorited] = useState(listing.isFavorited || false);
   const [isHovered, setIsHovered] = useState(false);
   return (
     <div
-      className="relative bg-white rounded-lg border border-gray-100 overflow-hidden hover:shadow-md transition-all"
+      className="relative bg-white rounded-lg border border-gray-100 hover:shadow-md transition-all"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
       {/* Image Section */}
-      <div className="relative aspect-square">
+      <div className="relative aspect-square overflow-hidden rounded-t-lg">
         <img
           src={listing?.primary_image?.url}
           alt={listing?.primary_image?.alt_text}
@@ -33,24 +34,6 @@ const ProductCard: React.FC<{ listing: Listing }> = ({ listing }) => {
             {listing.offerText}
           </div>
         )}
-
-        {/* Action Buttons */}
-        <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-          <button
-            onClick={() => setIsFavorited(!isFavorited)}
-            className="p-1.5 bg-white/80 rounded-full"
-          >
-            <Heart
-              className={`w-4 h-4 ${
-                isFavorited ? "fill-red-500 text-red-500" : "text-gray-600"
-              }`}
-            />
-          </button>
-
-          <button className="p-1.5 bg-white/80 rounded-full">
-            <Share2 className="w-4 h-4 text-gray-600" />
-          </button>
-        </div>
 
         {/* Stock Status */}
         <div className="absolute bottom-0 left-0 right-0 bg-white/90 p-2 text-xs">
@@ -99,6 +82,32 @@ const ProductCard: React.FC<{ listing: Listing }> = ({ listing }) => {
         </div>
       </div>
 
+      {/* Action Buttons - Positioned outside overflow container */}
+      <div
+        className={`absolute top-2 right-2 flex gap-1 transition-opacity z-10 ${
+          isHovered ? "opacity-100" : "opacity-0"
+        }`}
+      >
+        <Tooltip text="Add to wishlist" position="bottom">
+          <button
+            onClick={() => setIsFavorited(!isFavorited)}
+            className="p-1.5 bg-white/90 rounded-full hover:bg-white transition-colors"
+          >
+            <Heart
+              className={`w-4 h-4 ${
+                isFavorited ? "fill-red-500 text-red-500" : "text-gray-600"
+              }`}
+            />
+          </button>
+        </Tooltip>
+
+        <Tooltip text="Share product" position="bottom">
+          <button className="p-1.5 bg-white/90 rounded-full hover:bg-white transition-colors">
+            <Share2 className="w-4 h-4 text-gray-600" />
+          </button>
+        </Tooltip>
+      </div>
+
       {/* Content Section */}
       <div className="p-3">
         <div className="mb-2">
@@ -120,9 +129,19 @@ const ProductCard: React.FC<{ listing: Listing }> = ({ listing }) => {
             </div>
           </div>
 
-          <button className="bg-black text-white p-2 rounded-md hover:bg-gray-800 text-xs">
-            <ShoppingCart className="w-3.5 h-3.5" />
-          </button>
+          <div className="flex items-center gap-2">
+            <Tooltip text="View details" position="top">
+              <button className="p-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
+                <Eye className="w-3.5 h-3.5 text-gray-600" />
+              </button>
+            </Tooltip>
+
+            <Tooltip text="Add to cart" position="top">
+              <button className="bg-black text-white p-2 rounded-md hover:bg-gray-800 transition-colors">
+                <ShoppingCart className="w-3.5 h-3.5" />
+              </button>
+            </Tooltip>
+          </div>
         </div>
       </div>
     </div>
