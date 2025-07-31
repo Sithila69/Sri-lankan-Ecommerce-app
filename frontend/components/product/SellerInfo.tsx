@@ -4,7 +4,7 @@ import { Seller } from "./../../types/seller";
 
 const SellerInfo: React.FC<{ seller: Seller }> = ({ seller }) => {
   return (
-    <div className="bg-white rounded-lg shadow-sm p-6">
+    <div className="bg-white  shadow-sm p-6">
       <h3 className="font-semibold text-gray-900 mb-4">About the Seller</h3>
       <div className="flex items-start gap-4">
         <div className="bg-gray-200 rounded-full w-12 h-12 flex items-center justify-center">

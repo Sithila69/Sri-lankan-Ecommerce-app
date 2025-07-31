@@ -10,17 +10,14 @@ const Header: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
-    // Function to get cart count from localStorage
+    // Function to get unique item count from localStorage
     const getCartCount = () => {
       try {
         const cart = localStorage.getItem("guest_cart");
         if (cart) {
           const cartItems = JSON.parse(cart);
-          const totalItems = cartItems.reduce(
-            (sum: number, item: any) => sum + (item.quantity || 0),
-            0
-          );
-          setCartCount(totalItems);
+          // Count unique items (number of different products), not total quantities
+          setCartCount(cartItems.length);
         } else {
           setCartCount(0);
         }
@@ -38,19 +35,15 @@ const Header: React.FC = () => {
       getCartCount();
     };
 
-    // Listen for localStorage changes
+    // Listen for localStorage changes (from other tabs)
     window.addEventListener("storage", handleCartUpdate);
 
     // Custom event for cart updates within the same tab
     window.addEventListener("cartUpdated", handleCartUpdate);
 
-    // Poll for cart changes every 500ms
-    const interval = setInterval(getCartCount, 500);
-
     return () => {
       window.removeEventListener("storage", handleCartUpdate);
       window.removeEventListener("cartUpdated", handleCartUpdate);
-      clearInterval(interval);
     };
   }, []);
 
