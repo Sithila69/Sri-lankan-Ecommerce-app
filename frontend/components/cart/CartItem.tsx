@@ -25,7 +25,6 @@ const CartItem: React.FC<{
   const handleIncrease = () => {
     onUpdateQuantity(item.id, item.quantity + 1);
   };
-
   return (
     <div className="flex items-center justify-between py-4 border-b border-gray-200">
       <div className="flex items-center space-x-4">

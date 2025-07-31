@@ -37,6 +37,8 @@ const Home: React.FC = () => {
     fetchProducts();
   }, []);
 
+  console.log("Listings:", listings);
+
   const categories = [
     { name: "Food & Beverages", count: "2,547" },
     { name: "Clothing & Fashion", count: "1,832" },
@@ -60,50 +62,57 @@ const Home: React.FC = () => {
       {/* Hero Section */}
       <section className="bg-black text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-          <div className="max-w-4xl">
-            <h1 className="text-5xl md:text-7xl font-light mb-8 leading-tight">
-              Everything you need,
-              <br />
-              <span className="font-normal">right here.</span>
-            </h1>
-            <p className="text-xl text-gray-300 mb-12 max-w-2xl leading-relaxed">
-              Sri Lanka's premier marketplace connecting you with local
-              businesses and authentic products.
-            </p>
-          </div>
+          <div className="grid md:grid-cols-5 gap-20 items-center">
+            <div className="md:col-span-3">
+              <h1 className="text-5xl md:text-7xl font-light mb-8 leading-tight">
+                Everything you need,
+                <br />
+                <span className="font-normal">right here.</span>
+              </h1>
+              <p className="text-xl text-gray-300 mb-12 max-w-2xl leading-relaxed">
+                Sri Lanka's premier marketplace connecting you with local
+                businesses and authentic products.
+              </p>
 
-          {/* Search Bar */}
-          <div className="max-w-4xl">
-            <div className="bg-white border border-gray-200 rounded-none p-1">
-              <div className="flex flex-col md:flex-row ">
-                <div className="flex-1 relative ">
-                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                  <input
-                    type="text"
-                    placeholder="Search anything..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-12 pr-4 py-4 text-gray-900 border-0 focus:outline-none text-lg"
-                  />
+              {/* Search Bar */}
+              <div className="bg-white border border-gray-200 rounded-none p-1">
+                <div className="flex flex-col md:flex-row ">
+                  <div className="flex-1 relative ">
+                    <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                    <input
+                      type="text"
+                      placeholder="Search anything..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-full pl-12 pr-4 py-4 text-gray-900 border-0 focus:outline-none text-lg"
+                    />
+                  </div>
+                  <div className="md:w-56">
+                    <select
+                      value={selectedCategory}
+                      onChange={(e) => setSelectedCategory(e.target.value)}
+                      className="w-full py-4 px-4 text-gray-900 border-0 border-l border-gray-200 focus:outline-none text-lg bg-white"
+                    >
+                      <option value="">All Categories</option>
+                      {categories.map((cat) => (
+                        <option key={cat.name} value={cat.name}>
+                          {cat.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <button className="bg-black hover:bg-gray-800 text-white px-8 py-4 font-medium text-lg cursor-pointer">
+                    Search
+                  </button>
                 </div>
-                <div className="md:w-56">
-                  <select
-                    value={selectedCategory}
-                    onChange={(e) => setSelectedCategory(e.target.value)}
-                    className="w-full py-4 px-4 text-gray-900 border-0 border-l border-gray-200 focus:outline-none text-lg bg-white"
-                  >
-                    <option value="">All Categories</option>
-                    {categories.map((cat) => (
-                      <option key={cat.name} value={cat.name}>
-                        {cat.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <button className="bg-black hover:bg-gray-800 text-white px-8 py-4 font-medium text-lg cursor-pointer">
-                  Search
-                </button>
               </div>
+            </div>
+            <div className="hidden md:block md:col-span-2">
+              <img
+                src="/images/base_logo.png"
+                alt="placeholder"
+                className="rounded-lg"
+              />
             </div>
           </div>
         </div>
@@ -127,7 +136,6 @@ const Home: React.FC = () => {
           </div>
         </div>
       </section>
-
       {/* Categories */}
       <section className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -205,9 +213,7 @@ const Home: React.FC = () => {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="flex items-center justify-between mb-12">
           <div>
-            <h2 className="text-4xl font-light text-gray-900 mb-4">
-              Featured Products
-            </h2>
+            <h2 className="text-4xl font-light text-gray-900 mb-4">Featured</h2>
             <div className="w-16 h-px bg-black"></div>
           </div>
           <button

@@ -4,8 +4,9 @@ import { Star, MapPin, Clock, Heart, Plus, Minus, Check } from "lucide-react";
 import { DetailedListing } from "@/types";
 import { addToCart } from "@/utils/cart";
 
-const ProductDetails: React.FC<{ listing: DetailedListing }> = ({
+const ProductDetails: React.FC<{ listing: DetailedListing; type: string }> = ({
   listing,
+  type,
 }) => {
   const [quantity, setQuantity] = useState(1);
   const [totalPrice, setTotalPrice] = useState(listing.base_price);
@@ -20,7 +21,7 @@ const ProductDetails: React.FC<{ listing: DetailedListing }> = ({
     product_id: listing.id,
     name: listing.name,
     price: listing.base_price,
-    image_url: listing.primary_image?.url || "",
+    image_url: listing.images?.[0]?.image_url || "",
     quantity: quantity,
     seller: listing?.sellers?.business_name,
     stock: stock_quantity,
@@ -31,24 +32,44 @@ const ProductDetails: React.FC<{ listing: DetailedListing }> = ({
   }, [quantity, listing.base_price]);
 
   const handleAddToCart = () => {
-    // Add to cart logic here
+    if (listing.listing_type === "service") {
+      // For services, add to service requests
+      const serviceItem = {
+        ...item,
+        type: "service" as const,
+        booking_required: true,
+        quantity: 1, // Services typically have quantity of 1
+      };
+      addToCart(serviceItem, 1);
+    } else {
+      addToCart(item, stock_quantity);
+    }
   };
 
   const increaseQuantity = () => {
-    if (quantity < stock_quantity) {
+    if (listing.listing_type === "product" && quantity < stock_quantity) {
       setQuantity(quantity + 1);
     }
   };
 
   const decreaseQuantity = () => {
-    if (quantity > 1) {
+    if (listing.listing_type === "product" && quantity > 1) {
       setQuantity(quantity - 1);
     }
   };
 
+  // Helper variables for better UX
+  const isService = listing.listing_type === "service";
+  const isProductAvailable =
+    listing.listing_type === "product" && stock_quantity > 0;
+  const isServiceAvailable =
+    listing.listing_type === "service" &&
+    listing.availability_info?.service_type; // Service is available if it has a service type
+  const typeLabel = type.charAt(0).toUpperCase() + type.slice(1);
+
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
-      <div className="flex justify-between items-start mb-6">
+    <div className="bg-white  border border-gray-200 p-6 mb-6">
+      <div className="flex justify-between items-start mb-2">
         <div>
           <h2 className="text-2xl font-semibold text-gray-900 mb-1">
             {listing?.name}
@@ -70,9 +91,23 @@ const ProductDetails: React.FC<{ listing: DetailedListing }> = ({
           />
         </button>
       </div>
+      <div className="flex items-center gap-3 mb-2">
+        <span className="text-sm text-gray-500 bg-gray-100 px-3 py-1 ">
+          {typeLabel}
+        </span>
+        {listing.listing_type === "service" && (
+          <span className="text-sm text-blue-600 bg-blue-50 px-3 py-1 ">
+            {listing.availability_info?.service_type === "on_site"
+              ? "On-site"
+              : listing.availability_info?.service_type === "remote"
+              ? "Remote"
+              : "Hybrid"}
+          </span>
+        )}
+      </div>
 
       <div className="flex flex-wrap items-center gap-4 mb-6">
-        <div className="flex items-center bg-gray-50 px-3 py-1.5 rounded-md">
+        <div className="flex items-center bg-gray-50 px-3 py-1.5 ">
           <Star className="w-4 h-4 text-gray-900 fill-current" />
           {listing?.review_summary?.total > 0 ? (
             <>
@@ -138,7 +173,7 @@ const ProductDetails: React.FC<{ listing: DetailedListing }> = ({
           {listing?.listing_type === "product" && (
             <div>
               {stock_quantity > 0 ? (
-                <div className="flex items-center border border-gray-200 rounded-lg">
+                <div className="flex items-center border border-gray-200 ">
                   <button
                     onClick={decreaseQuantity}
                     className="p-2 hover:bg-gray-50 text-gray-600 transition-colors"
@@ -165,37 +200,64 @@ const ProductDetails: React.FC<{ listing: DetailedListing }> = ({
           )}
         </div>
 
-        {stock_quantity > 0 && (
-          <p className="text-sm text-gray-500 mb-6">
-            {stock_quantity} items available
-          </p>
+        {/* Service Type Info */}
+        {isService ? (
+          <div className="bg-gray-50 p-4 border border-gray-200 mb-6">
+            <div className="flex items-center justify-between">
+              <span className="text-gray-700 font-medium">Service Type</span>
+              <span className="font-medium text-gray-900">
+                {listing.availability_info?.service_type === "on_site"
+                  ? "On-site Service"
+                  : listing.availability_info?.service_type === "remote"
+                  ? "Remote Service"
+                  : listing.availability_info?.service_type === "hybrid"
+                  ? "Hybrid Service"
+                  : "Service Available"}
+              </span>
+            </div>
+          </div>
+        ) : (
+          stock_quantity > 0 && (
+            <p className="text-sm text-gray-500 mb-6">
+              {stock_quantity} items available
+            </p>
+          )
         )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <button
-            onClick={() => {
-              addToCart(item, stock_quantity);
-            }}
-            className="w-full bg-white border border-gray-300 text-gray-900 py-3 px-4 rounded-lg hover:bg-gray-50 transition-colors font-medium disabled:bg-gray-100 disabled:text-gray-400"
-            disabled={stock_quantity === 0}
-          >
-            Add to Cart
-          </button>
-
-          {listing.listing_type === "service" ? (
-            <button className="w-full bg-gray-900 text-white py-3 px-4 rounded-lg hover:bg-gray-800 transition-colors font-medium">
-              Book Now
-            </button>
+          {isService ? (
+            <>
+              <button
+                onClick={handleAddToCart}
+                className="w-full bg-white border border-gray-300 text-gray-900 py-3 px-4 hover:bg-gray-50 transition-colors font-medium"
+                disabled={!isServiceAvailable}
+              >
+                Add to Service Requests
+              </button>
+              <button
+                className="w-full bg-gray-900 text-white py-3 px-4 hover:bg-gray-800 transition-colors font-medium"
+                disabled={!isServiceAvailable}
+              >
+                Book Now
+              </button>
+            </>
           ) : (
-            <button
-              onClick={() => {
-                handleAddToCart();
-              }}
-              className="w-full bg-gray-900 text-white py-3 px-4 rounded-lg hover:bg-gray-800 transition-colors font-medium disabled:bg-gray-400"
-              disabled={stock_quantity === 0}
-            >
-              Buy Now
-            </button>
+            <>
+              <button
+                onClick={handleAddToCart}
+                className="w-full bg-white border border-gray-300 text-gray-900 py-3 px-4 hover:bg-gray-50 transition-colors font-medium disabled:bg-gray-100 disabled:text-gray-400"
+                disabled={!isProductAvailable}
+              >
+                Add to Cart
+              </button>
+              <button
+                onClick={handleAddToCart}
+                className="w-full bg-gray-900 text-white py-3 px-4 hover:bg-gray-800 transition-colors font-medium disabled:bg-gray-400"
+                disabled={!isProductAvailable}
+              >
+                Buy Now
+              </button>
+            </>
           )}
         </div>
       </div>

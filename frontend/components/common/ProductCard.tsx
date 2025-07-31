@@ -7,18 +7,39 @@ import {
   Eye,
   ShoppingCart,
   Calendar,
+  CalendarCheck,
 } from "lucide-react";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Tooltip from "./Tooltip";
+import { getListingUrl } from "@/utils/routes";
 
 const ProductCard: React.FC<{ listing: Listing }> = ({ listing }) => {
   const [isFavorited, setIsFavorited] = useState(listing.isFavorited || false);
   const [isHovered, setIsHovered] = useState(false);
+  const router = useRouter();
+
+  const handleViewDetails = () => {
+    const url = getListingUrl({
+      listing_type: listing.listing_type,
+      slug: listing.slug,
+    });
+    router.push(url);
+  };
+
+  const handleCardClick = (e: React.MouseEvent) => {
+    // Don't navigate if clicking on buttons
+    if ((e.target as HTMLElement).closest("button")) {
+      return;
+    }
+    handleViewDetails();
+  };
   return (
     <div
-      className="relative bg-white rounded-lg border border-gray-100 hover:shadow-md transition-all"
+      className="relative bg-white rounded-lg border border-gray-100 hover:shadow-md transition-all cursor-pointer"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      onClick={handleCardClick}
     >
       {/* Image Section */}
       <div className="relative aspect-square overflow-hidden rounded-t-lg">
@@ -101,7 +122,7 @@ const ProductCard: React.FC<{ listing: Listing }> = ({ listing }) => {
           </button>
         </Tooltip>
 
-        <Tooltip text="Share product" position="bottom">
+        <Tooltip text={`Share ${listing.listing_type}`} position="bottom">
           <button className="p-1.5 bg-white/90 rounded-full hover:bg-white transition-colors">
             <Share2 className="w-4 h-4 text-gray-600" />
           </button>
@@ -130,15 +151,29 @@ const ProductCard: React.FC<{ listing: Listing }> = ({ listing }) => {
           </div>
 
           <div className="flex items-center gap-2">
-            <Tooltip text="View details" position="top">
-              <button className="p-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
+            {/* <Tooltip text="View details" position="top">
+              <button
+                onClick={handleViewDetails}
+                className="p-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+              >
                 <Eye className="w-3.5 h-3.5 text-gray-600" />
               </button>
-            </Tooltip>
+            </Tooltip> */}
 
-            <Tooltip text="Add to cart" position="top">
+            <Tooltip
+              text={
+                listing.listing_type === "service"
+                  ? "Book service"
+                  : "Add to cart"
+              }
+              position="top"
+            >
               <button className="bg-black text-white p-2 rounded-md hover:bg-gray-800 transition-colors">
-                <ShoppingCart className="w-3.5 h-3.5" />
+                {listing.listing_type === "service" ? (
+                  <CalendarCheck className="w-3.5 h-3.5" />
+                ) : (
+                  <ShoppingCart className="w-3.5 h-3.5" />
+                )}
               </button>
             </Tooltip>
           </div>
