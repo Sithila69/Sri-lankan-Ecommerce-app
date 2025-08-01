@@ -54,11 +54,16 @@ const Header: React.FC = () => {
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
             <div className="flex items-center">
-              <Link href="/">
+              <Link href="/" className="flex items-center space-x-2">
+                <img
+                  src="/images/base_logo_black.png"
+                  alt="kadey.lk logo"
+                  width={60}
+                  height={60}
+                />
                 <h1 className="text-xl font-medium text-black">Kadey.lk</h1>
               </Link>
             </div>
-
             {/* Desktop Search Bar */}
             <div className="hidden md:flex flex-1 max-w-2xl mx-8">
               <div className="relative w-full">
@@ -72,7 +77,6 @@ const Header: React.FC = () => {
                 />
               </div>
             </div>
-
             {/* Desktop Actions */}
             <div className="hidden md:flex items-center space-x-1">
               <Link href="/wishlist">
@@ -98,7 +102,6 @@ const Header: React.FC = () => {
                 </button>
               </Link>
             </div>
-
             {/* Mobile Actions */}
             <div className="flex md:hidden items-center space-x-2">
               <button

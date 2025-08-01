@@ -12,6 +12,11 @@ export interface Listing {
   district: string;
   province: string;
   listing_type: "product" | "service";
+  category?: {
+    id: number;
+    name: string;
+    slug: string;
+  };
   img_url?: string;
   primary_image?: {
     url: string;
@@ -44,6 +49,10 @@ export interface Listing {
     service_type?: "on_site" | "remote" | "hybrid";
   };
 
+  created_at: string;
+  updated_at: string;
+  views_count: number;
+
   // Deprecated - keeping for backward compatibility
   stock_info?: {
     quantity: number;
@@ -58,6 +67,11 @@ export interface DetailedListing
   extends Omit<Listing, "seller" | "reviewSummary" | "time_info"> {
   seller_id: string;
   category_id: number;
+  category: {
+    id: number;
+    name: string;
+    slug: string;
+  };
   status: string;
   featured: boolean;
   views_count: number;

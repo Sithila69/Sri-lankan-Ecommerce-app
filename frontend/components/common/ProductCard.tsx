@@ -20,9 +20,13 @@ const ProductCard: React.FC<{ listing: Listing }> = ({ listing }) => {
   const router = useRouter();
 
   const handleViewDetails = () => {
+    // Use the actual category from the listing, fallback to "all" if not available
+    const category = listing.category?.slug || "all";
+
     const url = getListingUrl({
       listing_type: listing.listing_type,
       slug: listing.slug,
+      category: category,
     });
     router.push(url);
   };
@@ -36,13 +40,13 @@ const ProductCard: React.FC<{ listing: Listing }> = ({ listing }) => {
   };
   return (
     <div
-      className="relative bg-white rounded-lg border border-gray-100 hover:shadow-md transition-all cursor-pointer"
+      className="relative bg-white  border border-gray-100 hover:shadow-md transition-all cursor-pointer"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onClick={handleCardClick}
     >
       {/* Image Section */}
-      <div className="relative aspect-square overflow-hidden rounded-t-lg">
+      <div className="relative aspect-square overflow-hidden ">
         <img
           src={listing?.primary_image?.url}
           alt={listing?.primary_image?.alt_text}
@@ -168,7 +172,7 @@ const ProductCard: React.FC<{ listing: Listing }> = ({ listing }) => {
               }
               position="top"
             >
-              <button className="bg-black text-white p-2 rounded-md hover:bg-gray-800 transition-colors">
+              <button className="bg-black text-white p-2  hover:bg-gray-800 transition-colors">
                 {listing.listing_type === "service" ? (
                   <CalendarCheck className="w-3.5 h-3.5" />
                 ) : (
