@@ -13,6 +13,7 @@ import {
   Package,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import Link from "next/link";
 
 const Home: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -136,29 +137,64 @@ const Home: React.FC = () => {
           </div>
         </div>
       </section>
-      {/* Categories */}
+      {/* Main Categories Section */}
       <section className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mb-12">
+          <div className="mb-12 text-center">
             <h2 className="text-4xl font-light text-gray-900 mb-4">
-              Browse Categories
+              Explore Our Marketplace
             </h2>
-            <div className="w-16 h-px bg-black"></div>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Discover a wide range of products and services from the best local
+              businesses across Sri Lanka.
+            </p>
+            <div className="w-16 h-px bg-black mx-auto mt-6"></div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-gray-200">
-            {categories.map((category, index) => (
-              <button
-                key={index}
-                onClick={() => setSelectedCategory(category.name)}
-                className="bg-white p-8 hover:bg-gray-50 text-left group"
-              >
-                <h3 className="text-xl font-medium text-gray-900 mb-2 group-hover:text-black">
-                  {category.name}
-                </h3>
-                <p className="text-gray-500 text-sm">{category.count} items</p>
-              </button>
-            ))}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {/* Products Card */}
+            <Link href="/products">
+              <div className="relative overflow-hidden h-96 group cursor-pointer">
+                <img
+                  src="https://via.placeholder.com/800x600/000000/FFFFFF?text=Products"
+                  alt="A collection of various products"
+                  className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
+                />
+                <div className="absolute inset-0 bg-black bg-opacity-50 flex flex-col items-center justify-center text-center p-8">
+                  <h3 className="text-4xl font-bold text-white mb-2">
+                    Products
+                  </h3>
+                  <p className="text-lg text-gray-200 mb-4">
+                    From handmade crafts to daily essentials.
+                  </p>
+                  <div className="bg-white text-black px-6 py-3 font-medium hover:bg-gray-200 transition-colors">
+                    Shop Now
+                  </div>
+                </div>
+              </div>
+            </Link>
+
+            {/* Services Card */}
+            <Link href="/services">
+              <div className="relative  overflow-hidden h-96 group cursor-pointer">
+                <img
+                  src="https://via.placeholder.com/800x600/333333/FFFFFF?text=Services"
+                  alt="A person providing a service"
+                  className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
+                />
+                <div className="absolute inset-0 bg-black bg-opacity-50 flex flex-col items-center justify-center text-center p-8">
+                  <h3 className="text-4xl font-bold text-white mb-2">
+                    Services
+                  </h3>
+                  <p className="text-lg text-gray-200 mb-4">
+                    Find professionals for every need.
+                  </p>
+                  <div className="bg-white text-black px-6 py-3 font-medium hover:bg-gray-200 transition-colors">
+                    Book Now
+                  </div>
+                </div>
+              </div>
+            </Link>
           </div>
         </div>
       </section>

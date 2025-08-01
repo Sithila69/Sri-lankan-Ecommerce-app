@@ -42,7 +42,7 @@ const Tooltip: React.FC<TooltipProps> = ({
 
       {isVisible && (
         <div className={`absolute z-[9999] ${positionClasses[position]}`}>
-          <div className="bg-black text-white text-sm px-3 py-2 whitespace-nowrap font-medium rounded shadow-lg">
+          <div className="bg-black text-white text-sm px-3 py-2 whitespace-nowrap font-medium  shadow-lg">
             {text}
           </div>
           <div className={`absolute w-0 h-0 ${arrowClasses[position]}`}></div>

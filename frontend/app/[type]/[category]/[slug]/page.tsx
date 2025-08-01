@@ -15,10 +15,11 @@ const UnifiedListingPage = () => {
   const params = useParams();
   const router = useRouter();
   const type = params?.type as string;
+  const category = params?.category as string;
   const slug = params?.slug as string;
 
   // Validate type parameter
-  const validTypes = ["product", "service"];
+  const validTypes = ["products", "services"];
   if (!validTypes.includes(type)) {
     notFound();
   }
@@ -38,10 +39,32 @@ const UnifiedListingPage = () => {
         }
 
         const data = await response.json();
+        console.log("Fetched listing data:", {
+          slug,
+          type,
+          category,
+          listingType: data.listing_type,
+          listingCategory: data.categories.slug,
+        });
+
+        // Convert type to singular for comparison
+        const singularType = type === "products" ? "product" : "service";
 
         // Verify the listing type matches the URL
-        if (data.listing_type !== type) {
+        if (data.listing_type !== singularType) {
           notFound();
+        }
+        // Verify the category matches the URL (if category is not "all")
+        if (category !== "all" && data.categories.slug !== category) {
+          console.log("Category mismatch:", {
+            urlCategory: category,
+            actualCategory: data.categories.slug,
+            redirecting: true,
+          });
+          // Redirect to the correct category URL
+          const correctUrl = `/${type}/${data.category?.slug || "all"}/${slug}`;
+          router.replace(correctUrl);
+          return;
         }
 
         // Sort images by display_order, ensuring primary image (display_order = 0) comes first
@@ -70,10 +93,12 @@ const UnifiedListingPage = () => {
   }, [slug, type]);
 
   const handleBack = () => {
-    if (type === "product") {
-      router.push("/products");
+    // Navigate back to the category page using the actual category from the listing
+    const actualCategory = listing?.category?.slug || category;
+    if (actualCategory === "all") {
+      router.push(`/${type}`);
     } else {
-      router.push("/services");
+      router.push(`/${type}?category=${actualCategory}`);
     }
   };
 
@@ -123,9 +148,20 @@ const UnifiedListingPage = () => {
     notFound();
   }
 
-  const pageTitle = type === "product" ? "Product Details" : "Service Details";
-  const backText = type === "product" ? "Back to Products" : "Back to Services";
-  const typeLabel = type.charAt(0).toUpperCase() + type.slice(1);
+  const singularType = type === "products" ? "product" : "service";
+  const pageTitle =
+    singularType === "product" ? "Product Details" : "Service Details";
+  // Use the actual category name from the listing for better UX
+  const actualCategoryName =
+    listing?.category?.name ||
+    category
+      .split("-")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+
+  const backText = `Back to ${actualCategoryName} ${type}`;
+  const typeLabel =
+    singularType.charAt(0).toUpperCase() + singularType.slice(1);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -238,7 +274,7 @@ const UnifiedListingPage = () => {
           </div>
 
           <div>
-            <ProductDetails listing={listing} type={type} />
+            <ProductDetails listing={listing} type={singularType} />
             <SellerInfo seller={listing.sellers} />
           </div>
         </div>

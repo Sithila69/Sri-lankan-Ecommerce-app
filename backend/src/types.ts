@@ -6,6 +6,7 @@ export interface ListingFilters {
   max_price?: number;
   search?: string;
   status?: string;
+  in_stock?: boolean;
   featured?: boolean;
 }
 
