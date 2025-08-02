@@ -26,7 +26,7 @@ export const getListingUrl = (
   const pluralType =
     listing.listing_type === "product" ? "products" : "services";
   const category = listing.category || "all";
-  return `/${pluralType}/${category}/${listing.slug}`;
+  return `/categories/${pluralType}/${category}/${listing.slug}`;
 };
 
 // Generate listing URL by type, category and slug separately
@@ -36,7 +36,7 @@ export const getListingUrlByType = (
   slug: string
 ) => {
   const pluralType = type === "product" ? "products" : "services";
-  return `/${pluralType}/${category}/${slug}`;
+  return `/categories/${pluralType}/${category}/${slug}`;
 };
 
 // Generate category page URLs
@@ -46,9 +46,9 @@ export const getCategoryUrl = (
 ) => {
   const pluralType = type === "product" ? "products" : "services";
   if (category && category !== "all") {
-    return `/${pluralType}/${category}`;
+    return `/categories/${pluralType}/${category}`;
   }
-  return `/${pluralType}`;
+  return `/categories/${pluralType}`;
 };
 
 // Generate category page URLs (legacy query param version)
@@ -58,9 +58,9 @@ export const getCategoryUrlWithQuery = (
 ) => {
   const pluralType = type === "product" ? "products" : "services";
   if (category && category !== "all") {
-    return `/${pluralType}?category=${category}`;
+    return `/categories/${pluralType}?category=${category}`;
   }
-  return `/${pluralType}`;
+  return `/categories/${pluralType}`;
 };
 
 // Generate breadcrumb data for listings
@@ -78,8 +78,9 @@ export const getListingBreadcrumb = (
 
   return [
     { label: "Home", href: "/" },
-    { label: `${typeLabel}s`, href: `/${pluralType}` },
-    { label: categoryLabel, href: `/${pluralType}?category=${category}` },
+    { label: "Categories", href: "/categories" },
+    { label: `${typeLabel}s`, href: `/categories/${pluralType}` },
+    { label: categoryLabel, href: `/categories/${pluralType}/${category}` },
     { label: name, href: "#" },
   ];
 };
