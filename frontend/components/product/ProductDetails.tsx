@@ -9,7 +9,9 @@ const ProductDetails: React.FC<{ listing: DetailedListing; type: string }> = ({
   type,
 }) => {
   const [quantity, setQuantity] = useState(1);
-  const [totalPrice, setTotalPrice] = useState(listing.base_price);
+  const [totalPrice, setTotalPrice] = useState(
+    listing.discounted_price || listing.base_price
+  );
   const [isFavorited, setIsFavorited] = useState(false);
 
   const stock_quantity =
@@ -20,7 +22,7 @@ const ProductDetails: React.FC<{ listing: DetailedListing; type: string }> = ({
   const item = {
     product_id: listing.id,
     name: listing.name,
-    price: listing.base_price,
+    price: listing.discounted_price || listing.base_price,
     image_url: listing.images?.[0]?.image_url || "",
     quantity: quantity,
     seller: listing?.sellers?.business_name,
@@ -28,8 +30,9 @@ const ProductDetails: React.FC<{ listing: DetailedListing; type: string }> = ({
   };
 
   useEffect(() => {
-    setTotalPrice(listing.base_price * quantity);
-  }, [quantity, listing.base_price]);
+    const price = listing.discounted_price || listing.base_price;
+    setTotalPrice(price * quantity);
+  }, [quantity, listing.base_price, listing.discounted_price]);
 
   const handleAddToCart = () => {
     if (listing.listing_type === "service") {
@@ -160,9 +163,40 @@ const ProductDetails: React.FC<{ listing: DetailedListing; type: string }> = ({
       <div className="border-t border-gray-200 pt-6">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <span className="text-3xl font-semibold text-gray-900">
-              LKR {totalPrice.toLocaleString()}
-            </span>
+            {listing.discounted_price &&
+            listing.discounted_price < listing.base_price ? (
+              <div className="flex flex-col">
+                <div className="flex items-center gap-3">
+                  <span className="text-3xl font-semibold text-gray-900">
+                    LKR {totalPrice.toLocaleString()}
+                  </span>
+                  <div className="bg-red-500 text-white px-2 py-1 rounded text-xs font-semibold">
+                    {Math.round(
+                      ((listing.base_price - listing.discounted_price) /
+                        listing.base_price) *
+                        100
+                    )}
+                    % OFF
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 mt-1">
+                  <span className="text-lg text-gray-500 line-through">
+                    LKR {(listing.base_price * quantity).toLocaleString()}
+                  </span>
+                  <span className="text-sm text-green-600 font-medium">
+                    You save LKR{" "}
+                    {(
+                      (listing.base_price - listing.discounted_price) *
+                      quantity
+                    ).toLocaleString()}
+                  </span>
+                </div>
+              </div>
+            ) : (
+              <span className="text-3xl font-semibold text-gray-900">
+                LKR {totalPrice.toLocaleString()}
+              </span>
+            )}
             {listing?.pricing && (
               <span className="text-sm text-gray-500 ml-1">
                 /{listing?.pricing}
