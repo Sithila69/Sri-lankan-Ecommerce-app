@@ -70,11 +70,11 @@ const CategoriesPage = () => {
   }, []);
 
   const handleCategoryClick = (type: "products" | "services", slug: string) => {
-    router.push(`/${type}/${slug}`);
+    router.push(`/categories/${type}/${slug}`);
   };
 
   const handleViewAllClick = (type: "products" | "services") => {
-    router.push(`/${type}`);
+    router.push(`/categories/${type}`);
   };
 
   const sections: CategorySection[] = [
@@ -255,7 +255,7 @@ const CategoriesPage = () => {
               </span>
             </button>
             <button
-              onClick={() => router.push("/listings")}
+              onClick={() => router.push("/categories/listings")}
               className="flex items-center justify-center space-x-3 bg-white border border-gray-300 rounded-lg px-6 py-4 hover:border-gray-400 hover:shadow-sm transition-all duration-200"
             >
               <Grid3X3 className="w-5 h-5 text-gray-600" />

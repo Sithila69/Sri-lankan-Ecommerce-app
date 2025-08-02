@@ -1,12 +1,12 @@
 "use client";
 import { useEffect, useState } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useParams, useSearchParams, useRouter } from "next/navigation";
 import Header from "@/components/common/Header";
 import Footer from "@/components/common/Footer";
 import ProductsGrid from "@/components/common/ProductsGrid";
 import Breadcrumb from "@/components/common/Breadcrumb";
 import { Listing } from "@/types";
-import { Filter, ChevronDown, Grid3X3, Package, Wrench } from "lucide-react";
+import { Filter, ChevronDown } from "lucide-react";
 
 interface Category {
   id: number;
@@ -15,20 +15,29 @@ interface Category {
 }
 
 type SortOption = "newest" | "oldest" | "price-low" | "price-high" | "popular";
-type FilterType = "all" | "products" | "services";
+type ListingType = "products" | "services";
 
-const AllListingsPage = () => {
+const DynamicMainPage = () => {
   const [listings, setListings] = useState<Listing[]>([]);
-  const [productCategories, setProductCategories] = useState<Category[]>([]);
-  const [serviceCategories, setServiceCategories] = useState<Category[]>([]);
-  const [selectedType, setSelectedType] = useState<FilterType>("all");
+  const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [sortBy, setSortBy] = useState<SortOption>("newest");
   const [isLoading, setIsLoading] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
 
+  const params = useParams();
   const searchParams = useSearchParams();
   const router = useRouter();
+
+  const type = params?.type as ListingType;
+
+  // Validate type parameter
+  const isValidType = type === "products" || type === "services";
+
+  if (!isValidType) {
+    // Redirect to 404 or handle invalid type
+    return <div>Invalid page type</div>;
+  }
 
   const sortOptions = [
     { value: "newest", label: "Newest First" },
@@ -38,60 +47,43 @@ const AllListingsPage = () => {
     { value: "popular", label: "Most Popular" },
   ];
 
-  const typeOptions = [
-    {
-      value: "all",
-      label: "All Listings",
-      icon: <Grid3X3 className="w-4 h-4" />,
-    },
-    {
-      value: "products",
-      label: "Products Only",
-      icon: <Package className="w-4 h-4" />,
-    },
-    {
-      value: "services",
-      label: "Services Only",
-      icon: <Wrench className="w-4 h-4" />,
-    },
-  ];
+  // Dynamic labels based on type
+  const typeLabel = type === "products" ? "Products" : "Services";
+  const apiEndpoint = type === "products" ? "products" : "services";
+  const categoryApiType = type === "products" ? "product" : "service";
 
   // Load categories on initial load
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const [productResponse, serviceResponse] = await Promise.all([
-          fetch(`http://localhost:8080/categories/type/product`),
-          fetch(`http://localhost:8080/categories/type/service`),
-        ]);
-
-        const productData = await productResponse.json();
-        const serviceData = await serviceResponse.json();
-
-        setProductCategories(productData.categories || []);
-        setServiceCategories(serviceData.categories || []);
+        const categoriesResponse = await fetch(
+          `http://localhost:8080/categories/type/${categoryApiType}`
+        );
+        const categoriesData = await categoriesResponse.json();
+        const fetchedCategories = [
+          { id: 0, name: "All Categories", slug: "all" },
+          ...(categoriesData.categories || []),
+        ];
+        setCategories(fetchedCategories);
       } catch (error) {
         console.error("Error fetching categories:", error);
-        setProductCategories([]);
-        setServiceCategories([]);
+        setCategories([{ id: 0, name: "All Categories", slug: "all" }]);
       }
     };
 
     fetchCategories();
-  }, []);
+  }, [categoryApiType]);
 
   // Set initial filters from URL params
   useEffect(() => {
-    const typeParam = (searchParams.get("type") as FilterType) || "all";
     const categoryParam = searchParams.get("category") || "all";
     const sortParam = (searchParams.get("sort") as SortOption) || "newest";
 
-    setSelectedType(typeParam);
     setSelectedCategory(categoryParam);
     setSortBy(sortParam);
   }, [searchParams]);
 
-  // Fetch listings when filters change
+  // Fetch listings when category or sort changes
   useEffect(() => {
     const fetchListings = async () => {
       setIsLoading(true);
@@ -115,100 +107,54 @@ const AllListingsPage = () => {
             sortParam = "&sort=created_at&order=desc";
         }
 
-        let allListings: Listing[] = [];
+        const response = await fetch(
+          `http://localhost:8080/${apiEndpoint}/category/${selectedCategory}?limit=100${sortParam}`
+        );
+        const data = await response.json();
+        const fetchedListings = data[apiEndpoint] || [];
 
-        if (selectedType === "all" || selectedType === "products") {
-          try {
-            const productsResponse = await fetch(
-              `http://localhost:8080/products/category/${selectedCategory}?limit=100${sortParam}`
-            );
-            const productsData = await productsResponse.json();
-            const products = (productsData.products || []).map(
-              (item: Listing) => ({
-                ...item,
-                type: "product" as const,
-              })
-            );
-            allListings = [...allListings, ...products];
-          } catch (error) {
-            console.error("Error fetching products:", error);
-          }
-        }
-
-        if (selectedType === "all" || selectedType === "services") {
-          try {
-            const servicesResponse = await fetch(
-              `http://localhost:8080/services/category/${selectedCategory}?limit=100${sortParam}`
-            );
-            const servicesData = await servicesResponse.json();
-            const services = (servicesData.services || []).map(
-              (item: Listing) => ({
-                ...item,
-                type: "service" as const,
-              })
-            );
-            allListings = [...allListings, ...services];
-          } catch (error) {
-            console.error("Error fetching services:", error);
-          }
-        }
-
-        // Sort combined results if needed
-        if (sortBy === "newest") {
-          allListings.sort(
-            (a, b) =>
-              new Date(b.created_at).getTime() -
-              new Date(a.created_at).getTime()
-          );
-        } else if (sortBy === "oldest") {
-          allListings.sort(
-            (a, b) =>
-              new Date(a.created_at).getTime() -
-              new Date(b.created_at).getTime()
-          );
-        } else if (sortBy === "price-low") {
-          allListings.sort((a, b) => (a.base_price || 0) - (b.base_price || 0));
-        } else if (sortBy === "price-high") {
-          allListings.sort((a, b) => (b.base_price || 0) - (a.base_price || 0));
-        } else if (sortBy === "popular") {
-          allListings.sort(
-            (a, b) => (b.views_count || 0) - (a.views_count || 0)
-          );
-        }
-
-        setListings(allListings);
+        setListings(fetchedListings);
       } catch (error) {
-        console.error("Error fetching listings:", error);
+        console.error(`Error fetching ${type}:`, error);
         setListings([]);
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchListings();
-  }, [selectedType, selectedCategory, sortBy]);
+    // Only fetch if we have a selected category
+    if (selectedCategory) {
+      fetchListings();
+    }
+  }, [selectedCategory, sortBy, apiEndpoint, type]);
 
-  const handleTypeChange = (newType: FilterType) => {
-    setSelectedType(newType);
-    updateURL(newType, selectedCategory, sortBy);
-  };
-
-  const handleCategoryChange = (newCategory: string) => {
-    setSelectedCategory(newCategory);
+  const handleCategoryChange = (newCategorySlug: string) => {
     setShowFilters(false);
-    updateURL(selectedType, newCategory, sortBy);
+
+    // Navigate to category-specific route if not "all"
+    if (newCategorySlug !== "all") {
+      const params = new URLSearchParams();
+      if (sortBy !== "newest") {
+        params.set("sort", sortBy);
+      }
+      const newUrl = params.toString()
+        ? `/categories/${type}/${newCategorySlug}?${params.toString()}`
+        : `/categories/${type}/${newCategorySlug}`;
+      router.push(newUrl);
+    } else {
+      // Stay on main page but update URL params
+      setSelectedCategory(newCategorySlug);
+      updateURL(newCategorySlug, sortBy);
+    }
   };
 
   const handleSortChange = (newSort: SortOption) => {
     setSortBy(newSort);
-    updateURL(selectedType, selectedCategory, newSort);
+    updateURL(selectedCategory, newSort);
   };
 
-  const updateURL = (type: FilterType, category: string, sort: SortOption) => {
+  const updateURL = (category: string, sort: SortOption) => {
     const params = new URLSearchParams();
-    if (type !== "all") {
-      params.set("type", type);
-    }
     if (category !== "all") {
       params.set("category", category);
     }
@@ -217,38 +163,14 @@ const AllListingsPage = () => {
     }
 
     const newUrl = params.toString()
-      ? `/listings?${params.toString()}`
-      : "/listings";
+      ? `/categories/${type}?${params.toString()}`
+      : `/categories/${type}`;
     router.push(newUrl, { scroll: false });
   };
 
-  // Get available categories based on selected type
-  const getAvailableCategories = () => {
-    const allCategories = [{ id: 0, name: "All Categories", slug: "all" }];
-
-    if (selectedType === "all") {
-      // Combine and deduplicate categories
-      const combined = [...productCategories, ...serviceCategories];
-      const unique = combined.filter(
-        (category, index, self) =>
-          index === self.findIndex((c) => c.slug === category.slug)
-      );
-      return [...allCategories, ...unique];
-    } else if (selectedType === "products") {
-      return [...allCategories, ...productCategories];
-    } else if (selectedType === "services") {
-      return [...allCategories, ...serviceCategories];
-    }
-
-    return allCategories;
-  };
-
-  const availableCategories = getAvailableCategories();
   const selectedCategoryName =
-    availableCategories.find((c) => c.slug === selectedCategory)?.name ||
+    categories.find((c) => c.slug === selectedCategory)?.name ||
     "All Categories";
-  const selectedTypeName =
-    typeOptions.find((t) => t.value === selectedType)?.label || "All Listings";
 
   return (
     <div className="min-h-screen bg-white">
@@ -257,14 +179,10 @@ const AllListingsPage = () => {
         <Breadcrumb />
 
         <div className="mt-8">
-          <div className="flex items-center space-x-3 mb-4">
-            <Grid3X3 className="w-8 h-8 text-gray-700" />
-            <h1 className="text-4xl font-light text-gray-900">All Listings</h1>
-          </div>
+          <h1 className="text-4xl font-light text-gray-900 mb-4">
+            {typeLabel}
+          </h1>
           <div className="w-16 h-px bg-black"></div>
-          <p className="text-gray-600 mt-4 text-lg">
-            Browse all products and services in one place
-          </p>
         </div>
 
         {/* Filter and Sort Section */}
@@ -277,27 +195,9 @@ const AllListingsPage = () => {
                 {isLoading ? (
                   <span className="inline-block w-32 h-4 bg-gray-300 animate-pulse rounded" />
                 ) : (
-                  `${listings.length} listings found`
+                  `${listings.length} ${type} found`
                 )}
               </p>
-            </div>
-
-            {/* Type Filter - Mobile */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Type
-              </label>
-              <select
-                value={selectedType}
-                onChange={(e) => handleTypeChange(e.target.value as FilterType)}
-                className="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
-              >
-                {typeOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
             </div>
 
             {/* Category Filter - Mobile */}
@@ -322,7 +222,7 @@ const AllListingsPage = () => {
               {showFilters && (
                 <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-20 max-h-60 overflow-y-auto">
                   <div className="py-2">
-                    {availableCategories.map((category) => (
+                    {categories.map((category) => (
                       <button
                         key={category.id}
                         onClick={() => handleCategoryChange(category.slug)}
@@ -362,24 +262,6 @@ const AllListingsPage = () => {
           {/* Desktop: Horizontal layout */}
           <div className="hidden sm:flex sm:items-center sm:justify-between">
             <div className="flex items-center space-x-6">
-              {/* Type Filter - Desktop */}
-              <div className="flex items-center space-x-2">
-                <span className="text-sm font-medium text-gray-700">Type:</span>
-                <select
-                  value={selectedType}
-                  onChange={(e) =>
-                    handleTypeChange(e.target.value as FilterType)
-                  }
-                  className="bg-white border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent text-sm"
-                >
-                  {typeOptions.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
               {/* Category Filter - Desktop */}
               <div className="relative">
                 <button
@@ -400,7 +282,7 @@ const AllListingsPage = () => {
                 {showFilters && (
                   <div className="absolute top-full left-0 mt-2 w-72 bg-white border border-gray-200 rounded-lg shadow-lg z-20 max-h-60 overflow-y-auto">
                     <div className="py-2">
-                      {availableCategories.map((category) => (
+                      {categories.map((category) => (
                         <button
                           key={category.id}
                           onClick={() => handleCategoryChange(category.slug)}
@@ -423,7 +305,7 @@ const AllListingsPage = () => {
                 {isLoading ? (
                   <div className="w-32 h-4 bg-gray-300 animate-pulse rounded" />
                 ) : (
-                  `${listings.length} listings found`
+                  `${listings.length} ${type} found`
                 )}
               </div>
             </div>
@@ -455,28 +337,20 @@ const AllListingsPage = () => {
         {!isLoading && listings.length === 0 && (
           <div className="text-center py-16">
             <div className="w-16 h-16 mx-auto mb-6 bg-gray-100 flex items-center justify-center">
-              <Grid3X3 className="w-8 h-8 text-gray-400" />
+              <Filter className="w-8 h-8 text-gray-400" />
             </div>
             <h3 className="text-xl font-medium text-gray-900 mb-2">
-              No listings found
+              No {type} found
             </h3>
             <p className="text-gray-600 mb-6">
               Try adjusting your filters or browse all categories
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button
-                onClick={() => handleTypeChange("all")}
-                className="bg-black text-white px-6 py-3 hover:bg-gray-800 transition-colors font-medium rounded-lg"
-              >
-                View All Listings
-              </button>
-              <button
-                onClick={() => router.push("/categories")}
-                className="bg-white border border-gray-300 text-gray-900 px-6 py-3 hover:border-gray-400 transition-colors font-medium rounded-lg"
-              >
-                Browse Categories
-              </button>
-            </div>
+            <button
+              onClick={() => handleCategoryChange("all")}
+              className="bg-black text-white px-6 py-3 hover:bg-gray-800 transition-colors font-medium"
+            >
+              View All {typeLabel}
+            </button>
           </div>
         )}
       </main>
@@ -485,4 +359,4 @@ const AllListingsPage = () => {
   );
 };
 
-export default AllListingsPage;
+export default DynamicMainPage;
