@@ -190,7 +190,7 @@ const Home: React.FC = () => {
                     Find professionals for every need.
                   </p>
                   <div className="bg-white text-black px-6 py-3 font-medium hover:bg-gray-200 transition-colors">
-                    Book Now
+                    Explore
                   </div>
                 </div>
               </div>

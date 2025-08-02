@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useParams, useSearchParams, useRouter } from "next/navigation";
 import Header from "@/components/common/Header";
 import Footer from "@/components/common/Footer";
 import ProductsGrid from "@/components/common/ProductsGrid";
@@ -15,17 +15,30 @@ interface Category {
 }
 
 type SortOption = "newest" | "oldest" | "price-low" | "price-high" | "popular";
+type ListingType = "products" | "services";
 
-const ServicesPage = () => {
-  const [services, setServices] = useState<Listing[]>([]);
+const DynamicCategoryPage = () => {
+  const [listings, setListings] = useState<Listing[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [sortBy, setSortBy] = useState<SortOption>("newest");
   const [isLoading, setIsLoading] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
 
+  const params = useParams();
   const searchParams = useSearchParams();
   const router = useRouter();
+
+  const type = params?.type as ListingType;
+  const categorySlug = params?.category as string;
+
+  // Validate type parameter
+  const isValidType = type === "products" || type === "services";
+
+  if (!isValidType) {
+    // Redirect to 404 or handle invalid type
+    return <div>Invalid page type</div>;
+  }
 
   const sortOptions = [
     { value: "newest", label: "Newest First" },
@@ -35,12 +48,17 @@ const ServicesPage = () => {
     { value: "popular", label: "Most Popular" },
   ];
 
+  // Dynamic labels based on type
+  const typeLabel = type === "products" ? "Products" : "Services";
+  const apiEndpoint = type === "products" ? "products" : "services";
+  const categoryApiType = type === "products" ? "product" : "service";
+
   // Load categories on initial load
   useEffect(() => {
     const fetchCategories = async () => {
       try {
         const categoriesResponse = await fetch(
-          `http://localhost:8080/categories/type/service`
+          `http://localhost:8080/categories/type/${categoryApiType}`
         );
         const categoriesData = await categoriesResponse.json();
         const fetchedCategories = [
@@ -55,20 +73,20 @@ const ServicesPage = () => {
     };
 
     fetchCategories();
-  }, []);
+  }, [categoryApiType]);
 
-  // Set initial filters from URL params
+  // Set category from URL params and sort from query params
   useEffect(() => {
-    const categoryParam = searchParams.get("category") || "all";
+    if (categorySlug) {
+      setSelectedCategory(categorySlug);
+    }
     const sortParam = (searchParams.get("sort") as SortOption) || "newest";
-
-    setSelectedCategory(categoryParam);
     setSortBy(sortParam);
-  }, [searchParams]);
+  }, [categorySlug, searchParams]);
 
-  // Fetch services when category or sort changes
+  // Fetch listings when category or sort changes
   useEffect(() => {
-    const fetchServices = async () => {
+    const fetchListings = async () => {
       setIsLoading(true);
       try {
         // Build sort parameter for API
@@ -90,69 +108,86 @@ const ServicesPage = () => {
             sortParam = "&sort=created_at&order=desc";
         }
 
-        const servicesResponse = await fetch(
-          `http://localhost:8080/services/category/${selectedCategory}?limit=100${sortParam}`
+        // Use categorySlug from URL params directly instead of selectedCategory state
+        const categoryToFetch = categorySlug || "all";
+        const response = await fetch(
+          `http://localhost:8080/${apiEndpoint}/category/${categoryToFetch}?limit=100${sortParam}`
         );
-        const servicesData = await servicesResponse.json();
-        const fetchedServices = servicesData.services || [];
+        const data = await response.json();
+        const fetchedListings = data[apiEndpoint] || [];
 
-        setServices(fetchedServices);
+        setListings(fetchedListings);
       } catch (error) {
-        console.error("Error fetching services:", error);
-        setServices([]);
+        console.error(`Error fetching ${type}:`, error);
+        setListings([]);
       } finally {
         setIsLoading(false);
       }
     };
 
-    // Only fetch if we have a selected category
-    if (selectedCategory) {
-      fetchServices();
+    // Only fetch if we have a category slug from URL
+    if (categorySlug) {
+      fetchListings();
     }
-  }, [selectedCategory, sortBy]);
+  }, [categorySlug, sortBy, apiEndpoint, type]);
 
-  const handleCategoryChange = (categorySlug: string) => {
-    setSelectedCategory(categorySlug);
+  const handleCategoryChange = (newCategorySlug: string) => {
     setShowFilters(false);
 
-    // Navigate to category-specific route if not "all"
-    if (categorySlug !== "all") {
+    // Navigate to the appropriate route
+    if (newCategorySlug === "all") {
+      // Go to main type page
       const params = new URLSearchParams();
       if (sortBy !== "newest") {
         params.set("sort", sortBy);
       }
       const newUrl = params.toString()
-        ? `/services/${categorySlug}?${params.toString()}`
-        : `/services/${categorySlug}`;
+        ? `/${type}?${params.toString()}`
+        : `/${type}`;
       router.push(newUrl);
     } else {
-      updateURL(categorySlug, sortBy);
+      // Go to category-specific route
+      const params = new URLSearchParams();
+      if (sortBy !== "newest") {
+        params.set("sort", sortBy);
+      }
+      const newUrl = params.toString()
+        ? `/${type}/${newCategorySlug}?${params.toString()}`
+        : `/${type}/${newCategorySlug}`;
+      router.push(newUrl);
     }
   };
 
   const handleSortChange = (newSort: SortOption) => {
     setSortBy(newSort);
-    updateURL(selectedCategory, newSort);
-  };
 
-  const updateURL = (category: string, sort: SortOption) => {
+    // Update URL with sort parameter
     const params = new URLSearchParams();
-    if (category !== "all") {
-      params.set("category", category);
-    }
-    if (sort !== "newest") {
-      params.set("sort", sort);
+    if (newSort !== "newest") {
+      params.set("sort", newSort);
     }
 
     const newUrl = params.toString()
-      ? `/services?${params.toString()}`
-      : "/services";
+      ? `/${type}/${categorySlug}?${params.toString()}`
+      : `/${type}/${categorySlug}`;
     router.push(newUrl, { scroll: false });
   };
 
   const selectedCategoryName =
-    categories.find((c) => c.slug === selectedCategory)?.name ||
-    "All Categories";
+    categories.find((c) => c.slug === categorySlug)?.name || "All Categories";
+
+  // Generate breadcrumb items
+  const breadcrumbItems = [
+    { label: "Home", href: "/" },
+    { label: typeLabel, href: `/${type}` },
+  ];
+
+  if (categorySlug && categorySlug !== "all") {
+    breadcrumbItems.push({
+      label: selectedCategoryName,
+      href: "",
+    });
+  }
 
   return (
     <div className="min-h-screen bg-white">
@@ -161,7 +196,9 @@ const ServicesPage = () => {
         <Breadcrumb />
 
         <div className="mt-8">
-          <h1 className="text-4xl font-light text-gray-900 mb-4">Services</h1>
+          <h1 className="text-4xl font-light text-gray-900 mb-4">
+            {categorySlug === "all" ? typeLabel : selectedCategoryName}
+          </h1>
           <div className="w-16 h-px bg-black"></div>
         </div>
 
@@ -175,7 +212,7 @@ const ServicesPage = () => {
                 {isLoading ? (
                   <span className="inline-block w-32 h-4 bg-gray-300 animate-pulse rounded" />
                 ) : (
-                  `${services.length} services found`
+                  `${listings.length} ${type} found`
                 )}
               </p>
             </div>
@@ -207,7 +244,7 @@ const ServicesPage = () => {
                         key={category.id}
                         onClick={() => handleCategoryChange(category.slug)}
                         className={`w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors ${
-                          selectedCategory === category.slug
+                          categorySlug === category.slug
                             ? "bg-blue-50 text-blue-700 font-medium"
                             : "text-gray-700"
                         }`}
@@ -267,7 +304,7 @@ const ServicesPage = () => {
                           key={category.id}
                           onClick={() => handleCategoryChange(category.slug)}
                           className={`w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors ${
-                            selectedCategory === category.slug
+                            categorySlug === category.slug
                               ? "bg-blue-50 text-blue-700 font-medium"
                               : "text-gray-700"
                           }`}
@@ -285,7 +322,7 @@ const ServicesPage = () => {
                 {isLoading ? (
                   <div className="w-32 h-4 bg-gray-300 animate-pulse rounded" />
                 ) : (
-                  `${services.length} services found`
+                  `${listings.length} ${type} found`
                 )}
               </div>
             </div>
@@ -310,17 +347,17 @@ const ServicesPage = () => {
           </div>
         </div>
 
-        {/* Services Grid */}
-        <ProductsGrid listings={services} isLoading={isLoading} />
+        {/* Listings Grid */}
+        <ProductsGrid listings={listings} isLoading={isLoading} />
 
         {/* Empty State */}
-        {!isLoading && services.length === 0 && (
+        {!isLoading && listings.length === 0 && (
           <div className="text-center py-16">
             <div className="w-16 h-16 mx-auto mb-6 bg-gray-100 flex items-center justify-center">
               <Filter className="w-8 h-8 text-gray-400" />
             </div>
             <h3 className="text-xl font-medium text-gray-900 mb-2">
-              No services found
+              No {type} found
             </h3>
             <p className="text-gray-600 mb-6">
               Try adjusting your filters or browse all categories
@@ -329,7 +366,7 @@ const ServicesPage = () => {
               onClick={() => handleCategoryChange("all")}
               className="bg-black text-white px-6 py-3 hover:bg-gray-800 transition-colors font-medium"
             >
-              View All Services
+              View All {typeLabel}
             </button>
           </div>
         )}
@@ -339,4 +376,4 @@ const ServicesPage = () => {
   );
 };
 
-export default ServicesPage;
+export default DynamicCategoryPage;
