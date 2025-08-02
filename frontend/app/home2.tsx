@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import LoadingPage from "./loading";
 
 const Home: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -37,8 +38,6 @@ const Home: React.FC = () => {
 
     fetchProducts();
   }, []);
-
-  console.log("Listings:", listings);
 
   const categories = [
     { name: "Food & Beverages", count: "2,547" },
@@ -153,13 +152,8 @@ const Home: React.FC = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* Products Card */}
-            <Link href="/products">
+            <Link href="/categories/products">
               <div className="relative overflow-hidden h-96 group cursor-pointer">
-                <img
-                  src="https://via.placeholder.com/800x600/000000/FFFFFF?text=Products"
-                  alt="A collection of various products"
-                  className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
-                />
                 <div className="absolute inset-0 bg-black bg-opacity-50 flex flex-col items-center justify-center text-center p-8">
                   <h3 className="text-4xl font-bold text-white mb-2">
                     Products
@@ -177,11 +171,6 @@ const Home: React.FC = () => {
             {/* Services Card */}
             <Link href="/services">
               <div className="relative  overflow-hidden h-96 group cursor-pointer">
-                <img
-                  src="https://via.placeholder.com/800x600/333333/FFFFFF?text=Services"
-                  alt="A person providing a service"
-                  className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
-                />
                 <div className="absolute inset-0 bg-black bg-opacity-50 flex flex-col items-center justify-center text-center p-8">
                   <h3 className="text-4xl font-bold text-white mb-2">
                     Services

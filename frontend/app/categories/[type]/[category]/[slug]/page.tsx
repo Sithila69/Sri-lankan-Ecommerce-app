@@ -5,6 +5,8 @@ import Header from "@/components/common/Header";
 import Footer from "@/components/common/Footer";
 import ProductDetails from "@/components/product/ProductDetails";
 import Breadcrumb from "@/components/common/Breadcrumb";
+import ItemNotFound from "@/components/common/ItemNotFound";
+import ImageGallery from "@/components/common/ImageGallery";
 import { DetailedListing } from "@/types";
 
 type ListingType = "products" | "services";
@@ -31,20 +33,28 @@ const ListingDetailsPage = () => {
 
     const fetchListing = async () => {
       try {
-        const apiEndpoint = type === "products" ? "products" : "services";
         const response = await fetch(
-          `http://localhost:8080/${apiEndpoint}/${slug}`
+          `http://localhost:8080/listings/get-details/${slug}`
         );
-
         if (!response.ok) {
-          throw new Error(`Failed to fetch listing: ${response.status}`);
+          if (response.status === 404) {
+            throw new Error("404: Item not found");
+          } else if (response.status === 410) {
+            throw new Error("removed: Item has been removed");
+          } else {
+            throw new Error(`Failed to fetch listing: ${response.status}`);
+          }
         }
 
         const data = await response.json();
         setListing(data);
       } catch (error) {
         console.error("Error fetching listing:", error);
-        setError("Failed to load listing details");
+        setError(
+          error instanceof Error
+            ? error.message
+            : "Failed to load listing details"
+        );
       } finally {
         setIsLoading(false);
       }
@@ -97,24 +107,31 @@ const ListingDetailsPage = () => {
   }
 
   if (error || !listing) {
+    // Extract item name from slug for display
+    const itemName = slug
+      ? slug
+          .split("-")
+          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(" ")
+      : undefined;
+
+    const getReason = () => {
+      if (error?.includes("404")) return "not_found";
+      if (error?.includes("removed") || error?.includes("410"))
+        return "removed";
+      return "not_found";
+    };
+
     return (
       <div className="min-h-screen bg-white">
         <Header />
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="text-center">
-            <h1 className="text-2xl font-semibold text-gray-900 mb-4">
-              {error || "Listing Not Found"}
-            </h1>
-            <p className="text-gray-600 mb-8">
-              The requested listing could not be found or loaded.
-            </p>
-            <button
-              onClick={() => window.history.back()}
-              className="bg-black text-white px-6 py-3 hover:bg-gray-800 transition-colors font-medium"
-            >
-              Go Back
-            </button>
-          </div>
+          <ItemNotFound
+            type={type === "products" ? "product" : "service"}
+            category={categorySlug}
+            itemName={itemName}
+            reason={getReason()}
+          />
         </main>
         <Footer />
       </div>
@@ -129,38 +146,11 @@ const ListingDetailsPage = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
           {/* Image Gallery */}
-          <div className="space-y-4">
-            {listing.images && listing.images.length > 0 ? (
-              <>
-                <div className="aspect-square overflow-hidden bg-gray-100">
-                  <img
-                    src={listing.images[0]?.image_url}
-                    alt={listing.images[0]?.alt_text || listing.name}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                {listing.images.length > 1 && (
-                  <div className="grid grid-cols-4 gap-2">
-                    {listing.images.slice(1, 5).map((image, index) => (
-                      <div
-                        key={image.id}
-                        className="aspect-square overflow-hidden bg-gray-100"
-                      >
-                        <img
-                          src={image.thumbnail_url || image.image_url}
-                          alt={image.alt_text || `${listing.name} ${index + 2}`}
-                          className="w-full h-full object-cover cursor-pointer hover:opacity-80 transition-opacity"
-                        />
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </>
-            ) : (
-              <div className="aspect-square bg-gray-100 flex items-center justify-center">
-                <span className="text-gray-400">No image available</span>
-              </div>
-            )}
+          <div>
+            <ImageGallery
+              images={listing.images || []}
+              productName={listing.name}
+            />
           </div>
 
           {/* Product Details */}
