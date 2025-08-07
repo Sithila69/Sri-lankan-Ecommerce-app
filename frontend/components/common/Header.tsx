@@ -227,7 +227,7 @@ const Header: React.FC = () => {
               Today's Deals
             </Link>
             <Link
-              href="/new"
+              href="/new-arrivals"
               className="text-sm text-gray-600 hover:text-black font-medium"
             >
               New Arrivals
