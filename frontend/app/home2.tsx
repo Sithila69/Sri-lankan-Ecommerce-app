@@ -2,6 +2,7 @@
 import Footer from "@/components/common/Footer";
 import Header from "@/components/common/Header";
 import ProductsGrid from "@/components/common/ProductsGrid";
+import CategoriesSection from "@/components/home/CategoriesSection";
 import {
   Search,
   Truck,
@@ -150,7 +151,7 @@ const Home: React.FC = () => {
             <div className="w-16 h-px bg-black mx-auto mt-6"></div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
             {/* Products Card */}
             <Link href="/categories/products">
               <div className="relative overflow-hidden h-96 group cursor-pointer">
@@ -169,7 +170,7 @@ const Home: React.FC = () => {
             </Link>
 
             {/* Services Card */}
-            <Link href="/services">
+            <Link href="/categories/services">
               <div className="relative  overflow-hidden h-96 group cursor-pointer">
                 <div className="absolute inset-0 bg-black bg-opacity-50 flex flex-col items-center justify-center text-center p-8">
                   <h3 className="text-4xl font-bold text-white mb-2">
@@ -185,6 +186,9 @@ const Home: React.FC = () => {
               </div>
             </Link>
           </div>
+
+          {/* Categories Section */}
+          <CategoriesSection />
         </div>
       </section>
 

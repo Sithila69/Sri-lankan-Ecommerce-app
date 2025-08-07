@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useParams, useSearchParams, useRouter } from "next/navigation";
+import { notFound } from "next/navigation";
 import Header from "@/components/common/Header";
 import Footer from "@/components/common/Footer";
 import ProductsGrid from "@/components/common/ProductsGrid";
@@ -36,8 +37,7 @@ const DynamicCategoryPage = () => {
   const isValidType = type === "products" || type === "services";
 
   if (!isValidType) {
-    // Redirect to 404 or handle invalid type
-    return <div>Invalid page type</div>;
+    notFound();
   }
 
   const sortOptions = [
