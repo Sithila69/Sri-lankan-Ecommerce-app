@@ -80,8 +80,12 @@ export const getAllListings = async (
       page = 1,
       limit = 20,
       listing_type,
+      days_back,
     } = req.query as ListingFilters &
-      PaginationParams & { listing_type?: "product" | "service" };
+      PaginationParams & {
+        listing_type?: "product" | "service";
+        days_back?: number;
+      };
 
     const offset = (Number(page) - 1) * Number(limit);
 
@@ -111,6 +115,11 @@ export const getAllListings = async (
       } else if (listing_type === "service") {
         query = query.not("service_id", "is", null);
       }
+    }
+    if (days_back) {
+      const daysAgo = new Date();
+      daysAgo.setDate(daysAgo.getDate() - Number(days_back));
+      query = query.gte("created_at", daysAgo.toISOString());
     }
 
     const { data: baseListings, error: baseError } = await query;
@@ -287,7 +296,12 @@ export const getListingsByCategory = async (
       search,
       status = "active",
       featured,
-    } = req.query as ListingFilters & PaginationParams & { type?: "product" | "service" };
+      days_back,
+    } = req.query as ListingFilters &
+      PaginationParams & {
+        type?: "product" | "service";
+        days_back?: number;
+      };
 
     const offset = (Number(page) - 1) * Number(limit);
 
@@ -321,6 +335,13 @@ export const getListingsByCategory = async (
       query = query.not("product_id", "is", null);
     } else if (type === "service") {
       query = query.not("service_id", "is", null);
+    }
+
+    // Filter by date range
+    if (days_back) {
+      const daysAgo = new Date();
+      daysAgo.setDate(daysAgo.getDate() - Number(days_back));
+      query = query.gte("created_at", daysAgo.toISOString());
     }
 
     const { data: baseListings, error: baseError } = await query;
