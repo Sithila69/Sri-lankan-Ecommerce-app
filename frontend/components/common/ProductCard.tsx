@@ -19,6 +19,15 @@ const ProductCard: React.FC<{ listing: Listing }> = ({ listing }) => {
   const [isHovered, setIsHovered] = useState(false);
   const router = useRouter();
 
+  // Check if item is new (within last 7 days)
+  const isNewArrival = () => {
+    if (!listing.created_at) return false;
+    const createdDate = new Date(listing.created_at);
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    return createdDate > sevenDaysAgo;
+  };
+
   const handleViewDetails = () => {
     // Use the actual category from the listing, fallback to "all" if not available
     const category = listing.category?.slug || "all";
@@ -53,10 +62,21 @@ const ProductCard: React.FC<{ listing: Listing }> = ({ listing }) => {
           className="w-full h-full object-cover"
         />
 
+        {/* New Arrival Badge */}
+        {isNewArrival() && (
+          <div className="absolute top-2 left-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white px-2 py-1 rounded-md text-xs font-semibold shadow-sm">
+            ✨ NEW
+          </div>
+        )}
+
         {/* Discount Badge */}
         {listing.discounted_price &&
           listing.discounted_price < listing.base_price && (
-            <div className="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 rounded-md text-xs font-semibold">
+            <div
+              className={`absolute top-2 ${
+                isNewArrival() ? "left-16" : "left-2"
+              } bg-red-500 text-white px-2 py-1 rounded-md text-xs font-semibold`}
+            >
               {Math.round(
                 ((listing.base_price - listing.discounted_price) /
                   listing.base_price) *
@@ -67,7 +87,7 @@ const ProductCard: React.FC<{ listing: Listing }> = ({ listing }) => {
           )}
 
         {/* Offer Badge */}
-        {listing.hasOffer && !listing.discounted_price && (
+        {listing.hasOffer && !listing.discounted_price && !isNewArrival() && (
           <div className="absolute top-2 left-2 bg-yellow-400 text-black px-2 py-1 rounded-md text-xs font-semibold">
             {listing.offerText}
           </div>

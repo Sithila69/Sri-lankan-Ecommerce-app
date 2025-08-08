@@ -6,7 +6,14 @@ import Footer from "@/components/common/Footer";
 import ProductsGrid from "@/components/common/ProductsGrid";
 import Breadcrumb from "@/components/common/Breadcrumb";
 import { Listing } from "@/types";
-import { Clock, Package, Wrench, Calendar } from "lucide-react";
+import {
+  Clock,
+  Package,
+  Wrench,
+  Calendar,
+  Filter,
+  ChevronDown,
+} from "lucide-react";
 
 interface Category {
   id: number;
@@ -24,6 +31,7 @@ const NewArrivalsPage = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [selectedDateRange, setSelectedDateRange] = useState<DateRange>("30");
   const [isLoading, setIsLoading] = useState(true);
+  const [showFilters, setShowFilters] = useState(false);
 
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -103,7 +111,7 @@ const NewArrivalsPage = () => {
         }
 
         const response = await fetch(
-          `http://localhost:8080/listings?${params.toString()}`
+          `http://localhost:8080/listings/new-arrivals?${params.toString()}`
         );
         const data = await response.json();
         setListings(data.listings || []);
@@ -125,6 +133,7 @@ const NewArrivalsPage = () => {
 
   const handleCategoryChange = (newCategory: string) => {
     setSelectedCategory(newCategory);
+    setShowFilters(false);
     updateURL(selectedType, newCategory, selectedDateRange);
   };
 
@@ -172,17 +181,17 @@ const NewArrivalsPage = () => {
 
         <div className="mt-8">
           <div className="flex items-center space-x-3 mb-4">
-            <Clock className="w-8 h-8 text-blue-600" />
+            <Clock className="w-8 h-8 text-gray-700" />
             <h1 className="text-4xl font-light text-gray-900">New Arrivals</h1>
           </div>
-          <div className="w-16 h-px bg-blue-600"></div>
+          <div className="w-16 h-px bg-black"></div>
           <p className="text-gray-600 mt-4 text-lg">
             Discover the latest products and services added to our marketplace
           </p>
         </div>
 
         {/* Filter Section */}
-        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6 mb-8 mt-12">
+        <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-8 mt-12">
           {/* Mobile: Stack everything vertically */}
           <div className="block sm:hidden space-y-4">
             {/* Results Count - Mobile */}
@@ -199,7 +208,6 @@ const NewArrivalsPage = () => {
             {/* Date Range Filter - Mobile */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                <Calendar className="w-4 h-4 inline mr-2" />
                 Time Period
               </label>
               <select
@@ -207,7 +215,7 @@ const NewArrivalsPage = () => {
                 onChange={(e) =>
                   handleDateRangeChange(e.target.value as DateRange)
                 }
-                className="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
               >
                 {dateRangeOptions.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -225,7 +233,7 @@ const NewArrivalsPage = () => {
               <select
                 value={selectedType}
                 onChange={(e) => handleTypeChange(e.target.value as FilterType)}
-                className="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
               >
                 {typeOptions.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -236,21 +244,43 @@ const NewArrivalsPage = () => {
             </div>
 
             {/* Category Filter - Mobile */}
-            <div>
+            <div className="relative">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Category
               </label>
-              <select
-                value={selectedCategory}
-                onChange={(e) => handleCategoryChange(e.target.value)}
-                className="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className="w-full flex items-center justify-between bg-white border border-gray-300 rounded-lg px-4 py-3 text-left hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
               >
-                {availableCategories.map((category) => (
-                  <option key={category.id} value={category.slug}>
-                    {category.name}
-                  </option>
-                ))}
-              </select>
+                <span className="font-medium text-gray-900">
+                  {selectedCategoryName}
+                </span>
+                <ChevronDown
+                  className={`w-5 h-5 text-gray-400 transition-transform ${
+                    showFilters ? "rotate-180" : ""
+                  }`}
+                />
+              </button>
+
+              {showFilters && (
+                <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-20 max-h-60 overflow-y-auto">
+                  <div className="py-2">
+                    {availableCategories.map((category) => (
+                      <button
+                        key={category.id}
+                        onClick={() => handleCategoryChange(category.slug)}
+                        className={`w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors ${
+                          selectedCategory === category.slug
+                            ? "bg-gray-100 text-gray-900 font-medium"
+                            : "text-gray-700"
+                        }`}
+                      >
+                        {category.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
@@ -259,7 +289,7 @@ const NewArrivalsPage = () => {
             <div className="flex items-center space-x-6">
               {/* Date Range Filter - Desktop */}
               <div className="flex items-center space-x-2">
-                <Calendar className="w-4 h-4 text-blue-600" />
+                <Calendar className="w-4 h-4 text-gray-500" />
                 <span className="text-sm font-medium text-gray-700">
                   Period:
                 </span>
@@ -268,7 +298,7 @@ const NewArrivalsPage = () => {
                   onChange={(e) =>
                     handleDateRangeChange(e.target.value as DateRange)
                   }
-                  className="bg-white border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                  className="bg-white border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent text-sm"
                 >
                   {dateRangeOptions.map((option) => (
                     <option key={option.value} value={option.value}>
@@ -286,7 +316,7 @@ const NewArrivalsPage = () => {
                   onChange={(e) =>
                     handleTypeChange(e.target.value as FilterType)
                   }
-                  className="bg-white border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                  className="bg-white border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent text-sm"
                 >
                   {typeOptions.map((option) => (
                     <option key={option.value} value={option.value}>
@@ -297,52 +327,94 @@ const NewArrivalsPage = () => {
               </div>
 
               {/* Category Filter - Desktop */}
-              <div className="flex items-center space-x-2">
-                <span className="text-sm font-medium text-gray-700">
-                  Category:
-                </span>
-                <select
-                  value={selectedCategory}
-                  onChange={(e) => handleCategoryChange(e.target.value)}
-                  className="bg-white border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+              <div className="relative">
+                <button
+                  onClick={() => setShowFilters(!showFilters)}
+                  className="flex items-center space-x-2 bg-white border border-gray-300 rounded-lg px-4 py-2.5 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-colors"
                 >
-                  {availableCategories.map((category) => (
-                    <option key={category.id} value={category.slug}>
-                      {category.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
+                  <Filter className="w-4 h-4 text-gray-500" />
+                  <span className="font-medium text-gray-900">
+                    {selectedCategoryName}
+                  </span>
+                  <ChevronDown
+                    className={`w-4 h-4 text-gray-400 transition-transform ${
+                      showFilters ? "rotate-180" : ""
+                    }`}
+                  />
+                </button>
 
-            {/* Results Count - Desktop */}
-            <div className="text-sm text-gray-600">
-              {isLoading ? (
-                <div className="w-32 h-4 bg-gray-300 animate-pulse rounded" />
-              ) : (
-                `${listings.length} new items found`
-              )}
+                {showFilters && (
+                  <div className="absolute top-full left-0 mt-2 w-72 bg-white border border-gray-200 rounded-lg shadow-lg z-20 max-h-60 overflow-y-auto">
+                    <div className="py-2">
+                      {availableCategories.map((category) => (
+                        <button
+                          key={category.id}
+                          onClick={() => handleCategoryChange(category.slug)}
+                          className={`w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors ${
+                            selectedCategory === category.slug
+                              ? "bg-gray-100 text-gray-900 font-medium"
+                              : "text-gray-700"
+                          }`}
+                        >
+                          {category.name}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Results Count - Desktop */}
+              <div className="text-sm text-gray-600">
+                {isLoading ? (
+                  <div className="w-32 h-4 bg-gray-300 animate-pulse rounded" />
+                ) : (
+                  `${listings.length} new items found`
+                )}
+              </div>
             </div>
           </div>
         </div>
 
         {/* Current Filters Display */}
-        <div className="mb-6">
-          <div className="flex flex-wrap items-center gap-2 text-sm text-gray-600">
-            <span>Showing:</span>
-            <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full font-medium">
-              {selectedDateRangeLabel}
-            </span>
-            {selectedType !== "all" && (
-              <span className="bg-gray-100 text-gray-800 px-2 py-1 rounded-full">
-                {typeOptions.find((t) => t.value === selectedType)?.label}
+        <div className="mb-8">
+          <div className="bg-gray-50 rounded-lg p-4">
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="text-sm font-medium text-gray-700">
+                Active Filters:
               </span>
-            )}
-            {selectedCategory !== "all" && (
-              <span className="bg-gray-100 text-gray-800 px-2 py-1 rounded-full">
-                {selectedCategoryName}
-              </span>
-            )}
+              <div className="flex flex-wrap gap-2">
+                <span className="bg-black text-white px-3 py-1 rounded-full text-sm font-medium">
+                  <Calendar className="w-3 h-3 inline mr-1" />
+                  {selectedDateRangeLabel}
+                </span>
+                {selectedType !== "all" && (
+                  <span className="bg-gray-200 text-gray-800 px-3 py-1 rounded-full text-sm font-medium">
+                    {typeOptions.find((t) => t.value === selectedType)?.icon}
+                    <span className="ml-1">
+                      {typeOptions.find((t) => t.value === selectedType)?.label}
+                    </span>
+                  </span>
+                )}
+                {selectedCategory !== "all" && (
+                  <span className="bg-gray-200 text-gray-800 px-3 py-1 rounded-full text-sm font-medium">
+                    {selectedCategoryName}
+                  </span>
+                )}
+              </div>
+              {(selectedType !== "all" || selectedCategory !== "all") && (
+                <button
+                  onClick={() => {
+                    setSelectedType("all");
+                    setSelectedCategory("all");
+                    updateURL("all", "all", selectedDateRange);
+                  }}
+                  className="text-sm text-gray-600 hover:text-black font-medium"
+                >
+                  Clear filters
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
@@ -352,20 +424,23 @@ const NewArrivalsPage = () => {
         {/* Empty State */}
         {!isLoading && listings.length === 0 && (
           <div className="text-center py-16">
-            <div className="w-16 h-16 mx-auto mb-6 bg-blue-100 rounded-full flex items-center justify-center">
-              <Clock className="w-8 h-8 text-blue-600" />
+            <div className="w-16 h-16 mx-auto mb-6 bg-gray-100 rounded-full flex items-center justify-center">
+              <Clock className="w-8 h-8 text-gray-400" />
             </div>
             <h3 className="text-xl font-medium text-gray-900 mb-2">
               No new arrivals found
             </h3>
             <p className="text-gray-600 mb-6">
-              Try adjusting your time period or browse all listings
+              No new items have been added in the{" "}
+              {selectedDateRangeLabel.toLowerCase()}. Try extending your search
+              period or explore our full catalog.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <button
                 onClick={() => handleDateRangeChange("90")}
-                className="bg-blue-600 text-white px-6 py-3 hover:bg-blue-700 transition-colors font-medium rounded-lg"
+                className="bg-black text-white px-6 py-3 hover:bg-gray-800 transition-colors font-medium rounded-lg"
               >
+                <Calendar className="w-4 h-4 inline mr-2" />
                 Extend to 3 Months
               </button>
               <button
@@ -373,6 +448,45 @@ const NewArrivalsPage = () => {
                 className="bg-white border border-gray-300 text-gray-900 px-6 py-3 hover:border-gray-400 transition-colors font-medium rounded-lg"
               >
                 Browse All Listings
+              </button>
+            </div>
+
+            {/* Quick suggestions */}
+            <div className="mt-12 grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-2xl mx-auto">
+              <button
+                onClick={() => {
+                  setSelectedType("products");
+                  setSelectedDateRange("90");
+                  updateURL("products", selectedCategory, "90");
+                }}
+                className="p-4 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors text-center border border-gray-200"
+              >
+                <Package className="w-6 h-6 text-gray-600 mx-auto mb-2" />
+                <span className="text-sm font-medium text-gray-900">
+                  New Products
+                </span>
+              </button>
+              <button
+                onClick={() => {
+                  setSelectedType("services");
+                  setSelectedDateRange("90");
+                  updateURL("services", selectedCategory, "90");
+                }}
+                className="p-4 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors text-center border border-gray-200"
+              >
+                <Wrench className="w-6 h-6 text-gray-600 mx-auto mb-2" />
+                <span className="text-sm font-medium text-gray-900">
+                  New Services
+                </span>
+              </button>
+              <button
+                onClick={() => router.push("/categories")}
+                className="p-4 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors text-center border border-gray-200"
+              >
+                <div className="w-6 h-6 bg-gray-400 rounded mx-auto mb-2"></div>
+                <span className="text-sm font-medium text-gray-900">
+                  All Categories
+                </span>
               </button>
             </div>
           </div>

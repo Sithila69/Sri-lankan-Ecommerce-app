@@ -179,6 +179,13 @@ const Header: React.FC = () => {
                 Deals
               </Link>
               <Link
+                href="/new-arrivals"
+                className="block text-gray-900 font-medium py-2"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                New Arrivals
+              </Link>
+              <Link
                 href="/wishlist"
                 className="block text-gray-900 font-medium py-2"
                 onClick={() => setIsMobileMenuOpen(false)}
