@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import { ArrowLeft, Plus, Minus, CheckCircle } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import ProductDetails from "./ProductDetails";
 import SellerInfo from "./SellerInfo";
 

@@ -3,66 +3,6 @@ import { Request, Response } from "express";
 import { supabase } from "../supabase";
 import { ListingFilters, PaginationParams } from "../types";
 
-// DEBUG CONTROLLER - Remove this after testing
-export const debugListings = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
-  try {
-    console.log("Debug: Checking database connection and data...");
-
-    // 1. Check if we can connect to listings table
-    const { data: allListings, error: listingsError } = await supabase
-      .from("listings")
-      .select("*")
-      .limit(5);
-
-    console.log("Listings count:", allListings?.length);
-    console.log("Listings error:", listingsError);
-
-    // 2. Check sellers table
-    const { data: sellers, error: sellersError } = await supabase
-      .from("sellers")
-      .select("*")
-      .limit(5);
-
-    console.log("Sellers count:", sellers?.length);
-    console.log("Sellers error:", sellersError);
-
-    // 3. Try a simple join
-    const { data: joinTest, error: joinError } = await supabase
-      .from("listings")
-      .select(
-        `
-        id,
-        name,
-        sellers (
-          id,
-          business_name
-        )
-      `
-      )
-      .limit(3);
-
-    console.log("Join test count:", joinTest?.length);
-    console.log("Join error:", joinError);
-
-    res.json({
-      raw_listings: allListings,
-      sellers: sellers,
-      join_test: joinTest,
-      errors: {
-        listings: listingsError,
-        sellers: sellersError,
-        join: joinError,
-      },
-    });
-  } catch (err) {
-    console.error("Debug error:", err);
-    res.status(500).json({ error: "Debug failed", details: err });
-  }
-};
-
 export const getAllListings = async (
   req: Request,
   res: Response
