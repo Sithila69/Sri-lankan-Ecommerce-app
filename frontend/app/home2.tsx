@@ -245,16 +245,16 @@ const Home: React.FC = () => {
             <h2 className="text-4xl font-light text-gray-900 mb-4">Featured</h2>
             <div className="w-16 h-px bg-black"></div>
           </div>
-          <button
+          {/* <button
             onClick={() => setShowFilters(!showFilters)}
             className="flex items-center text-gray-900  space-x-2 bg-white border border-gray-300 px-6 py-3 hover:bg-gray-50 cursor-pointer"
           >
             <Filter className="w-4 h-4 " />
             <span>Filter</span>
-          </button>
+          </button> */}
         </div>
 
-        {showFilters && (
+        {/* {showFilters && (
           <div className="text-gray-900  bg-white border border-gray-200 p-8 mb-12 ">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
               <div>
@@ -306,7 +306,7 @@ const Home: React.FC = () => {
               </div>
             </div>
           </div>
-        )}
+        )} */}
 
         <ProductsGrid listings={listings} isLoading={isLoading} />
       </main>
