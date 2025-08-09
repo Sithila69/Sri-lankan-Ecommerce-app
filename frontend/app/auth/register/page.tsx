@@ -5,6 +5,7 @@ import { Eye, EyeOff, Mail, Lock, User, Phone, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import Header from "@/components/common/Header";
 import Footer from "@/components/common/Footer";
+import { registerCustomer, RegisterCustomerData } from "@/utils/api";
 
 const RegisterPage: React.FC = () => {
   const [registrationMethod, setRegistrationMethod] = useState<
@@ -195,11 +196,24 @@ const RegisterPage: React.FC = () => {
     setIsLoading(true);
 
     try {
-      // TODO: Replace with actual API call
-      console.log("Registration attempt:", formData);
+      // Prepare data for API call
+      const registrationData: RegisterCustomerData = {
+        first_name: formData.firstName,
+        last_name: formData.lastName,
+        email:
+          registrationMethod === "email"
+            ? formData.email
+            : `${formData.phone}@temp.com`, // Temporary email for phone registration
+        password:
+          registrationMethod === "email"
+            ? formData.password
+            : "TempPassword123!", // Temporary password for phone registration
+        phone: registrationMethod === "phone" ? formData.phone : undefined,
+        preferred_language: "en",
+        marketing_consent: false,
+      };
 
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      const response = await registerCustomer(registrationData);
 
       // Handle successful registration
       const message =
@@ -207,9 +221,14 @@ const RegisterPage: React.FC = () => {
           ? "Registration successful! Please check your email to verify your account."
           : "Registration successful! Your account has been created.";
       alert(message);
-    } catch (error) {
+
+      // Optionally redirect to login page
+      // window.location.href = '/auth/login';
+    } catch (error: any) {
       console.error("Registration error:", error);
-      setErrors({ general: "Registration failed. Please try again." });
+      setErrors({
+        general: error.message || "Registration failed. Please try again.",
+      });
     } finally {
       setIsLoading(false);
     }

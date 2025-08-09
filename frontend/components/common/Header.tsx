@@ -96,6 +96,12 @@ const Header: React.FC = () => {
                 </button>
               </Link>
 
+              <Link href="/auth/login">
+                <button className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-black border border-gray-300 hover:border-black transition-colors">
+                  Sign In
+                </button>
+              </Link>
+
               <Link href="/account">
                 <button className="p-3 hover:bg-gray-50 text-gray-600 hover:text-black">
                   <User className="w-5 h-5" />
@@ -157,6 +163,13 @@ const Header: React.FC = () => {
         {isMobileMenuOpen && (
           <div className="md:hidden border-t border-gray-200 bg-white">
             <div className="px-4 py-6 space-y-4">
+              <Link
+                href="/auth/login"
+                className="block w-full text-center bg-black text-white font-medium py-3 px-4 hover:bg-gray-800 transition-colors"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Sign In
+              </Link>
               <Link
                 href="/categories"
                 className="block text-gray-900 font-medium py-2"
