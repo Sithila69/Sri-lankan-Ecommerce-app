@@ -3,6 +3,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { ChevronRight, Home } from "lucide-react";
 
 interface BreadcrumbItem {
   name: string;
@@ -26,25 +27,63 @@ const Breadcrumb = () => {
 
   return (
     <nav className="text-sm text-gray-500 mb-4" aria-label="Breadcrumb">
-      <ol className="flex items-center space-x-2">
-        <li>
-          <Link href="/" className="hover:underline text-blue-600">
-            Home
+      {/* Desktop View - Single Line */}
+      <ol className="hidden md:flex items-center flex-wrap gap-x-1 gap-y-2">
+        <li className="flex items-center">
+          <Link
+            href="/"
+            className="flex items-center hover:text-gray-700 transition-colors"
+          >
+            <Home className="w-4 h-4" />
           </Link>
         </li>
         {crumbs.map((crumb, idx) => (
-          <li key={idx} className="flex items-center space-x-2">
-            <span className="mx-1">/</span>
+          <li key={idx} className="flex items-center space-x-1">
+            <ChevronRight className="w-4 h-4 text-gray-400" />
             {crumb.current ? (
-              <span className="text-gray-700 font-medium">{crumb.name}</span>
+              <span className="text-gray-900 font-medium">{crumb.name}</span>
             ) : (
-              <Link href={crumb.href} className="hover:underline text-blue-600">
+              <Link
+                href={crumb.href}
+                className="hover:text-gray-700 transition-colors"
+              >
                 {crumb.name}
               </Link>
             )}
           </li>
         ))}
       </ol>
+
+      {/* Mobile View - Multi-line with flex wrap */}
+      <div className="md:hidden">
+        <ol className="flex items-center flex-wrap gap-x-1 gap-y-2">
+          <li className="flex items-center">
+            <Link
+              href="/"
+              className="flex items-center hover:text-gray-700 transition-colors"
+            >
+              <Home className="w-4 h-4" />
+            </Link>
+          </li>
+          {crumbs.map((crumb, idx) => (
+            <li key={idx} className="flex items-center space-x-1">
+              <ChevronRight className="w-4 h-4 text-gray-400 flex-shrink-0" />
+              {crumb.current ? (
+                <span className="text-gray-900 font-medium break-words">
+                  {crumb.name}
+                </span>
+              ) : (
+                <Link
+                  href={crumb.href}
+                  className="hover:text-gray-700 transition-colors break-words"
+                >
+                  {crumb.name}
+                </Link>
+              )}
+            </li>
+          ))}
+        </ol>
+      </div>
     </nav>
   );
 };

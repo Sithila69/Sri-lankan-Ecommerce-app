@@ -19,6 +19,23 @@ export interface RegisterResponse {
   user_id: string;
 }
 
+export interface LoginData {
+  email: string;
+  password: string;
+}
+
+export interface LoginResponse {
+  message: string;
+  token: string;
+  user: {
+    id: string;
+    email: string;
+    first_name: string;
+    last_name: string;
+    user_type: string;
+  };
+}
+
 export const registerCustomer = async (
   data: RegisterCustomerData
 ): Promise<RegisterResponse> => {
@@ -35,6 +52,27 @@ export const registerCustomer = async (
   if (!response.ok) {
     const errorData = await response.json();
     throw new Error(errorData.error || "Registration failed");
+  }
+
+  return response.json();
+};
+
+export const loginCustomer = async (
+  data: LoginData
+): Promise<LoginResponse> => {
+  const baseURL = getBaseURL();
+
+  const response = await fetch(`${baseURL}/customers/login`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.error || "Login failed");
   }
 
   return response.json();

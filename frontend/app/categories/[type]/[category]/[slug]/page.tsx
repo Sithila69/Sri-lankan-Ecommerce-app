@@ -9,6 +9,7 @@ import Breadcrumb from "@/components/common/Breadcrumb";
 import ItemNotFound from "@/components/common/ItemNotFound";
 import ImageGallery from "@/components/common/ImageGallery";
 import { DetailedListing } from "@/types";
+import SellerInfo from "@/components/product/SellerInfo";
 
 type ListingType = "products" | "services";
 
@@ -158,6 +159,11 @@ const ListingDetailsPage = () => {
             </div>
           </div>
         )}
+
+        {/* Seller Information Section */}
+        <div className="mt-8 border-t border-gray-200 pt-8">
+          <SellerInfo seller={listing.sellers} />
+        </div>
 
         {/* Features */}
         {listing.features && listing.features.length > 0 && (

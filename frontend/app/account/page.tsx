@@ -14,36 +14,33 @@ import {
   Bell,
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import Header from "@/components/common/Header";
 import Footer from "@/components/common/Footer";
+import { isAuthenticated, getUser, logout } from "@/utils/auth";
 
 const AccountPage: React.FC = () => {
+  const router = useRouter();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
-    // Check if user is logged in (you can replace this with your actual auth logic)
     const checkAuthStatus = () => {
-      const token = localStorage.getItem("auth_token");
-      const userData = localStorage.getItem("user_data");
+      const authStatus = isAuthenticated();
+      const userData = getUser();
 
-      if (token && userData) {
-        setIsLoggedIn(true);
-        setUser(JSON.parse(userData));
-      } else {
-        setIsLoggedIn(false);
-        setUser(null);
-      }
+      setIsLoggedIn(authStatus);
+      setUser(userData);
     };
 
     checkAuthStatus();
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem("auth_token");
-    localStorage.removeItem("user_data");
+    logout();
     setIsLoggedIn(false);
     setUser(null);
+    router.push("/");
   };
 
   // Guest User View
