@@ -64,8 +64,8 @@ const ProductCard: React.FC<{ listing: Listing }> = ({ listing }) => {
 
         {/* New Arrival Badge */}
         {isNewArrival() && (
-          <div className="absolute top-2 left-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white px-2 py-1 rounded-md text-xs font-semibold shadow-sm">
-            ✨ NEW
+          <div className="absolute top-2 left-2 bg-gray-900 text-white px-3 py-1 text-xs font-medium">
+            NEW
           </div>
         )}
 
@@ -75,7 +75,7 @@ const ProductCard: React.FC<{ listing: Listing }> = ({ listing }) => {
             <div
               className={`absolute top-2 ${
                 isNewArrival() ? "left-16" : "left-2"
-              } bg-red-500 text-white px-2 py-1 rounded-md text-xs font-semibold`}
+              } bg-red-500 text-white px-3 py-1 text-xs font-medium`}
             >
               {Math.round(
                 ((listing.base_price - listing.discounted_price) /
@@ -88,7 +88,7 @@ const ProductCard: React.FC<{ listing: Listing }> = ({ listing }) => {
 
         {/* Offer Badge */}
         {listing.hasOffer && !listing.discounted_price && !isNewArrival() && (
-          <div className="absolute top-2 left-2 bg-yellow-400 text-black px-2 py-1 rounded-md text-xs font-semibold">
+          <div className="absolute top-2 left-2 bg-yellow-400 text-black px-3 py-1 text-xs font-medium">
             {listing.offerText}
           </div>
         )}

@@ -1,12 +1,15 @@
 "use client";
 import React, { useState } from "react";
 import { Eye, EyeOff, Mail, Lock, ArrowLeft, Phone } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 import Link from "next/link";
 import Header from "@/components/common/Header";
 import Footer from "@/components/common/Footer";
+import { loginCustomer } from "@/utils/api";
 
 const LoginPage: React.FC = () => {
+  const router = useRouter();
   const [loginMethod, setLoginMethod] = useState<"email" | "phone">("email");
   const [formData, setFormData] = useState({
     email: "",
@@ -140,17 +143,30 @@ const LoginPage: React.FC = () => {
     setIsLoading(true);
 
     try {
-      // TODO: Replace with actual API call
-      console.log("Login attempt:", formData);
+      if (loginMethod === "email") {
+        // Email login with backend API
+        const response = await loginCustomer({
+          email: formData.email,
+          password: formData.password,
+        });
 
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+        // Store the JWT token in localStorage
+        localStorage.setItem("authToken", response.token);
+        localStorage.setItem("user", JSON.stringify(response.user));
 
-      // Handle successful login
-      alert("Login successful!");
-    } catch (error) {
+        // Redirect to account page or home
+        router.push("/account");
+      } else {
+        // Phone login - still using mock for now
+        console.log("Phone login attempt:", formData);
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        alert("Phone login not yet implemented!");
+      }
+    } catch (error: any) {
       console.error("Login error:", error);
-      setErrors({ general: "Login failed. Please try again." });
+      setErrors({
+        general: error.message || "Login failed. Please try again.",
+      });
     } finally {
       setIsLoading(false);
     }
