@@ -1,3 +1,5 @@
+import { getAuthStatus, logoutCustomer } from "./api";
+
 export interface User {
   id: string;
   email: string;
@@ -6,35 +8,51 @@ export interface User {
   user_type: string;
 }
 
-export const getAuthToken = (): string | null => {
-  if (typeof window === "undefined") return null;
-  return localStorage.getItem("authToken");
+// Check authentication status by calling the backend
+export const checkAuthStatus = async (): Promise<{
+  authenticated: boolean;
+  user?: User;
+}> => {
+  try {
+    const result = await getAuthStatus();
+    return result;
+  } catch (error) {
+    return { authenticated: false };
+  }
 };
 
-export const getUser = (): User | null => {
-  if (typeof window === "undefined") return null;
-  const userStr = localStorage.getItem("user");
-  return userStr ? JSON.parse(userStr) : null;
+// For backward compatibility - now checks with server
+export const isAuthenticated = async (): Promise<boolean> => {
+  const status = await checkAuthStatus();
+  return status.authenticated;
 };
 
-export const isAuthenticated = (): boolean => {
-  return !!getAuthToken();
+// Get user from server
+export const getUser = async (): Promise<User | null> => {
+  const status = await checkAuthStatus();
+  return status.user || null;
 };
 
-export const logout = (): void => {
+// Logout by calling the backend
+export const logout = async (): Promise<void> => {
+  try {
+    await logoutCustomer();
+  } catch (error) {
+    console.error("Logout error:", error);
+    // Even if the server call fails, we should still redirect
+  }
+};
+
+// For API calls - cookies are automatically included
+export const getAuthHeaders = (): Record<string, string> => {
+  return {
+    "Content-Type": "application/json",
+  };
+};
+
+// Legacy localStorage cleanup (for users who had tokens in localStorage)
+export const clearLegacyAuth = (): void => {
   if (typeof window === "undefined") return;
   localStorage.removeItem("authToken");
   localStorage.removeItem("user");
-};
-
-export const getAuthHeaders = (): Record<string, string> => {
-  const token = getAuthToken();
-  return token
-    ? {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      }
-    : {
-        "Content-Type": "application/json",
-      };
 };

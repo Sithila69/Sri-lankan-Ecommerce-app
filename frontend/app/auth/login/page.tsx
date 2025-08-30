@@ -150,10 +150,14 @@ const LoginPage: React.FC = () => {
           password: formData.password,
         });
 
-        // Store the JWT token in localStorage
-        localStorage.setItem("authToken", response.token);
-        localStorage.setItem("user", JSON.stringify(response.user));
+        // Clear any legacy localStorage tokens
+        localStorage.removeItem("authToken");
+        localStorage.removeItem("user");
 
+        // Notify other components that auth status changed
+        window.dispatchEvent(new CustomEvent("authUpdated"));
+
+        // Cookie is automatically set by the server
         // Redirect to account page or home
         router.push("/account");
       } else {

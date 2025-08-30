@@ -1,6 +1,7 @@
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 import productRoutes from "./src/routes/product-routes";
 import userRoutes from "./src/routes/user-routes";
 import ListingRoutes from "./src/routes/listings-routes";
@@ -19,6 +20,7 @@ app.use(
   })
 );
 app.use(express.json());
+app.use(cookieParser());
 
 app.use("/products", productRoutes);
 app.use("/users", userRoutes);

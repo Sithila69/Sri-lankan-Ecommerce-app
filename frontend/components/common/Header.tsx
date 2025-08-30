@@ -2,12 +2,15 @@
 import { Heart, Search, ShoppingCart, User, Menu, X } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect } from "react";
+import { checkAuthStatus } from "@/utils/auth";
 
 const Header: React.FC = () => {
   const [cartCount, setCartCount] = useState(0);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthLoading, setIsAuthLoading] = useState(true);
 
   useEffect(() => {
     // Function to get unique item count from localStorage
@@ -27,12 +30,33 @@ const Header: React.FC = () => {
       }
     };
 
+    // Check authentication status
+    const checkAuth = async () => {
+      try {
+        const authStatus = await checkAuthStatus();
+        setIsAuthenticated(authStatus.authenticated);
+      } catch (error) {
+        console.error("Auth check error:", error);
+        setIsAuthenticated(false);
+      } finally {
+        setIsAuthLoading(false);
+      }
+    };
+
     // Get initial cart count
     getCartCount();
+
+    // Check authentication
+    checkAuth();
 
     // Listen for cart updates
     const handleCartUpdate = () => {
       getCartCount();
+    };
+
+    // Listen for auth updates
+    const handleAuthUpdate = () => {
+      checkAuth();
     };
 
     // Listen for localStorage changes (from other tabs)
@@ -41,9 +65,13 @@ const Header: React.FC = () => {
     // Custom event for cart updates within the same tab
     window.addEventListener("cartUpdated", handleCartUpdate);
 
+    // Custom event for auth updates
+    window.addEventListener("authUpdated", handleAuthUpdate);
+
     return () => {
       window.removeEventListener("storage", handleCartUpdate);
       window.removeEventListener("cartUpdated", handleCartUpdate);
+      window.removeEventListener("authUpdated", handleAuthUpdate);
     };
   }, []);
 
@@ -96,17 +124,23 @@ const Header: React.FC = () => {
                 </button>
               </Link>
 
-              <Link href="/auth/login">
-                <button className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-black border border-gray-300 hover:border-black transition-colors">
-                  Sign In
-                </button>
-              </Link>
-
-              <Link href="/account">
-                <button className="p-3 hover:bg-gray-50 text-gray-600 hover:text-black">
-                  <User className="w-5 h-5" />
-                </button>
-              </Link>
+              {!isAuthLoading && (
+                <>
+                  {!isAuthenticated ? (
+                    <Link href="/auth/login">
+                      <button className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-black border border-gray-300 hover:border-black transition-colors">
+                        Sign In
+                      </button>
+                    </Link>
+                  ) : (
+                    <Link href="/account">
+                      <button className="p-3 hover:bg-gray-50 text-gray-600 hover:text-black">
+                        <User className="w-5 h-5" />
+                      </button>
+                    </Link>
+                  )}
+                </>
+              )}
             </div>
             {/* Mobile Actions */}
             <div className="flex md:hidden items-center space-x-2">
@@ -163,13 +197,27 @@ const Header: React.FC = () => {
         {isMobileMenuOpen && (
           <div className="md:hidden border-t border-gray-200 bg-white">
             <div className="px-4 py-6 space-y-4">
-              <Link
-                href="/auth/login"
-                className="block w-full text-center bg-black text-white font-medium py-3 px-4 hover:bg-gray-800 transition-colors"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                Sign In
-              </Link>
+              {!isAuthLoading && (
+                <>
+                  {!isAuthenticated ? (
+                    <Link
+                      href="/auth/login"
+                      className="block w-full text-center bg-black text-white font-medium py-3 px-4 hover:bg-gray-800 transition-colors"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      Sign In
+                    </Link>
+                  ) : (
+                    <Link
+                      href="/account"
+                      className="block text-gray-900 font-medium py-2"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      My Account
+                    </Link>
+                  )}
+                </>
+              )}
               <Link
                 href="/categories"
                 className="block text-gray-900 font-medium py-2"
@@ -204,13 +252,6 @@ const Header: React.FC = () => {
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 Wishlist
-              </Link>
-              <Link
-                href="/account"
-                className="block text-gray-900 font-medium py-2"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                My Account
               </Link>
               <Link
                 href="/support"
