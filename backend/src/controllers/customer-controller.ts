@@ -152,9 +152,17 @@ export const loginCustomer = async (
       { expiresIn: "24h" }
     );
 
+    // Set HTTP-only cookie
+    res.cookie("authToken", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production", // Use HTTPS in production
+      sameSite: "strict",
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours in milliseconds
+      path: "/",
+    });
+
     res.status(200).json({
       message: "Login successful",
-      token,
       user: {
         id: user.id,
         email: user.email,
@@ -165,6 +173,75 @@ export const loginCustomer = async (
     });
   } catch (error: any) {
     console.error("Error logging in customer:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+export const logoutCustomer = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    // Clear the HTTP-only cookie
+    res.clearCookie("authToken", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      path: "/",
+    });
+
+    res.status(200).json({
+      message: "Logout successful",
+    });
+  } catch (error: any) {
+    console.error("Error logging out customer:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+interface AuthenticatedRequest extends Request {
+  user?: {
+    userId: string;
+    email: string;
+    userType: string;
+  };
+}
+
+export const getAuthStatus = async (
+  req: AuthenticatedRequest,
+  res: Response
+): Promise<void> => {
+  try {
+    if (!req.user) {
+      res.status(401).json({ authenticated: false });
+      return;
+    }
+
+    // Get user details from database
+    const { data: user, error: userError } = await supabase
+      .from("users")
+      .select("id, email, first_name, last_name, user_type, is_active")
+      .eq("id", req.user.userId)
+      .eq("user_type", "customer")
+      .single();
+
+    if (userError || !user || !user.is_active) {
+      res.status(401).json({ authenticated: false });
+      return;
+    }
+
+    res.status(200).json({
+      authenticated: true,
+      user: {
+        id: user.id,
+        email: user.email,
+        first_name: user.first_name,
+        last_name: user.last_name,
+        user_type: user.user_type,
+      },
+    });
+  } catch (error: any) {
+    console.error("Error checking auth status:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 };

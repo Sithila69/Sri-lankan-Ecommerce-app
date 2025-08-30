@@ -67,12 +67,53 @@ export const loginCustomer = async (
     headers: {
       "Content-Type": "application/json",
     },
+    credentials: "include", // Include cookies in the request
     body: JSON.stringify(data),
   });
 
   if (!response.ok) {
     const errorData = await response.json();
     throw new Error(errorData.error || "Login failed");
+  }
+
+  return response.json();
+};
+
+export const logoutCustomer = async (): Promise<{ message: string }> => {
+  const baseURL = getBaseURL();
+
+  const response = await fetch(`${baseURL}/customers/logout`, {
+    method: "POST",
+    credentials: "include", // Include cookies in the request
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.error || "Logout failed");
+  }
+
+  return response.json();
+};
+
+export const getAuthStatus = async (): Promise<{
+  authenticated: boolean;
+  user?: {
+    id: string;
+    email: string;
+    first_name: string;
+    last_name: string;
+    user_type: string;
+  };
+}> => {
+  const baseURL = getBaseURL();
+
+  const response = await fetch(`${baseURL}/customers/auth-status`, {
+    method: "GET",
+    credentials: "include", // Include cookies in the request
+  });
+
+  if (!response.ok) {
+    return { authenticated: false };
   }
 
   return response.json();

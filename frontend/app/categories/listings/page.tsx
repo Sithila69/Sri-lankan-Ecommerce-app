@@ -7,6 +7,8 @@ import ProductsGrid from "@/components/common/ProductsGrid";
 import Breadcrumb from "@/components/common/Breadcrumb";
 import { Listing } from "@/types";
 import { Filter, ChevronDown, Grid3X3, Package, Wrench } from "lucide-react";
+import { getBaseURL } from "@/utils/getBaseURL";
+import { useQuery } from "@tanstack/react-query";
 
 interface Category {
   id: number;
@@ -17,6 +19,21 @@ interface Category {
 type SortOption = "newest" | "oldest" | "price-low" | "price-high" | "popular";
 type FilterType = "all" | "products" | "services";
 
+const fetchCategories = async () => {
+  const [productResponse, serviceResponse] = await Promise.all([
+    fetch(`${getBaseURL()}/categories/type/product`),
+    fetch(`${getBaseURL()}/categories/type/service`),
+  ]);
+
+  const productData = await productResponse.json();
+  const serviceData = await serviceResponse.json();
+
+  return {
+    productCategories: productData.categories || [],
+    serviceCategories: serviceData.categories || [],
+  };
+};
+
 const AllListingsPage = () => {
   const [listings, setListings] = useState<Listing[]>([]);
   const [productCategories, setProductCategories] = useState<Category[]>([]);
@@ -24,8 +41,16 @@ const AllListingsPage = () => {
   const [selectedType, setSelectedType] = useState<FilterType>("all");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [sortBy, setSortBy] = useState<SortOption>("newest");
-  const [isLoading, setIsLoading] = useState(true);
+
   const [showFilters, setShowFilters] = useState(false);
+  const {
+    data,
+    isLoading: categoriesLoading,
+    isError,
+  } = useQuery({
+    queryKey: ["categories"],
+    queryFn: fetchCategories,
+  });
 
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -56,29 +81,13 @@ const AllListingsPage = () => {
     },
   ];
 
-  // Load categories on initial load
+  // Set categories from React Query data
   useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const [productResponse, serviceResponse] = await Promise.all([
-          fetch(`http://localhost:8080/categories/type/product`),
-          fetch(`http://localhost:8080/categories/type/service`),
-        ]);
-
-        const productData = await productResponse.json();
-        const serviceData = await serviceResponse.json();
-
-        setProductCategories(productData.categories || []);
-        setServiceCategories(serviceData.categories || []);
-      } catch (error) {
-        console.error("Error fetching categories:", error);
-        setProductCategories([]);
-        setServiceCategories([]);
-      }
-    };
-
-    fetchCategories();
-  }, []);
+    if (data) {
+      setProductCategories(data.productCategories || []);
+      setServiceCategories(data.serviceCategories || []);
+    }
+  }, [data]);
 
   // Set initial filters from URL params
   useEffect(() => {
@@ -91,10 +100,13 @@ const AllListingsPage = () => {
     setSortBy(sortParam);
   }, [searchParams]);
 
+  // Add loading state for listings
+  const [isLoadingListings, setIsLoadingListings] = useState(true);
+
   // Fetch listings when filters change
   useEffect(() => {
     const fetchListings = async () => {
-      setIsLoading(true);
+      setIsLoadingListings(true);
       try {
         // Build sort parameter for API
         let sortParam = "";
@@ -120,7 +132,7 @@ const AllListingsPage = () => {
         if (selectedType === "all" || selectedType === "products") {
           try {
             const productsResponse = await fetch(
-              `http://localhost:8080/products/category/${selectedCategory}?limit=100${sortParam}`
+              `${getBaseURL()}/products/category/${selectedCategory}?limit=100${sortParam}`
             );
             const productsData = await productsResponse.json();
             const products = (productsData.products || []).map(
@@ -138,7 +150,7 @@ const AllListingsPage = () => {
         if (selectedType === "all" || selectedType === "services") {
           try {
             const servicesResponse = await fetch(
-              `http://localhost:8080/services/category/${selectedCategory}?limit=100${sortParam}`
+              `${getBaseURL()}/services/category/${selectedCategory}?limit=100${sortParam}`
             );
             const servicesData = await servicesResponse.json();
             const services = (servicesData.services || []).map(
@@ -181,7 +193,7 @@ const AllListingsPage = () => {
         console.error("Error fetching listings:", error);
         setListings([]);
       } finally {
-        setIsLoading(false);
+        setIsLoadingListings(false);
       }
     };
 
@@ -274,7 +286,7 @@ const AllListingsPage = () => {
             {/* Results Count - Mobile */}
             <div className="text-center">
               <p className="text-sm text-gray-600">
-                {isLoading ? (
+                {isLoadingListings ? (
                   <span className="inline-block w-32 h-4 bg-gray-300 animate-pulse rounded" />
                 ) : (
                   `${listings.length} listings found`
@@ -420,7 +432,7 @@ const AllListingsPage = () => {
 
               {/* Results Count - Desktop */}
               <div className="text-sm text-gray-600">
-                {isLoading ? (
+                {isLoadingListings ? (
                   <div className="w-32 h-4 bg-gray-300 animate-pulse rounded" />
                 ) : (
                   `${listings.length} listings found`
@@ -449,10 +461,10 @@ const AllListingsPage = () => {
         </div>
 
         {/* Listings Grid */}
-        <ProductsGrid listings={listings} isLoading={isLoading} />
+        <ProductsGrid listings={listings} isLoading={isLoadingListings} />
 
         {/* Empty State */}
-        {!isLoading && listings.length === 0 && (
+        {!isLoadingListings && listings.length === 0 && (
           <div className="text-center py-16">
             <div className="w-16 h-16 mx-auto mb-6 bg-gray-100 flex items-center justify-center">
               <Grid3X3 className="w-8 h-8 text-gray-400" />
