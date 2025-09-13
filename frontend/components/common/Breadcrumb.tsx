@@ -34,7 +34,7 @@ const Breadcrumb = () => {
             href="/"
             className="flex items-center hover:text-gray-700 transition-colors"
           >
-            <Home className="w-4 h-4" />
+            Home
           </Link>
         </li>
         {crumbs.map((crumb, idx) => (
