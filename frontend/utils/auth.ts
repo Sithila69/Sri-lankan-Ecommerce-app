@@ -49,10 +49,3 @@ export const getAuthHeaders = (): Record<string, string> => {
     "Content-Type": "application/json",
   };
 };
-
-// Legacy localStorage cleanup (for users who had tokens in localStorage)
-export const clearLegacyAuth = (): void => {
-  if (typeof window === "undefined") return;
-  localStorage.removeItem("authToken");
-  localStorage.removeItem("user");
-};
