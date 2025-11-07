@@ -33,8 +33,8 @@ const OrderConfirmation: React.FC<OrderConfirmationProps> = ({
             Order Confirmed!
           </h1>
           <p className="text-gray-600 mb-6">
-            Thank you for your order #{order.id}. We&apos;ve received your order
-            and will process it shortly.
+            Thank you for your order #{order.id}. We've received your order and
+            will process it shortly.
           </p>
 
           <div className="bg-gray-50 rounded-lg p-6 mb-8 text-left">

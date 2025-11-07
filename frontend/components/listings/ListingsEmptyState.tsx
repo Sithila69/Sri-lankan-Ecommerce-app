@@ -1,5 +1,6 @@
 import { useRouter } from "next/navigation";
 import { Grid3X3 } from "lucide-react";
+import { FilterType } from "@/types/listings";
 
 interface ListingsEmptyStateProps {
   onViewAll: () => void;

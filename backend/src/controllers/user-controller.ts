@@ -6,20 +6,20 @@ export const getAllUsers = async (
   res: Response
 ): Promise<void> => {
   try {
-    const { data: users, error: SupabaseError } = await supabase
+    const { data: users, error } = await supabase
       .from("users")
       .select("*")
       .order("created_at", { ascending: false });
 
-    if (SupabaseError || !users) {
+    if (error || !users) {
       res
         .status(500)
-        .json({ error: SupabaseError?.message || "Failed to fetch users" });
+        .json({ error: error?.message || "Failed to fetch users" });
       return;
     }
 
     res.status(200).json(users);
-  } catch {
+  } catch (err) {
     res.status(500).json({ error: "Internal server error" });
   }
 };

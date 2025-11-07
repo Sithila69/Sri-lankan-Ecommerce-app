@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import { Eye, EyeOff, Mail, Lock, Phone } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, ArrowLeft, Phone } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 import Link from "next/link";
@@ -145,7 +145,7 @@ const LoginPage: React.FC = () => {
     try {
       if (loginMethod === "email") {
         // Email login with backend API
-        await loginCustomer({
+        const response = await loginCustomer({
           email: formData.email,
           password: formData.password,
         });

@@ -126,7 +126,7 @@ const CategoriesSection = () => {
           Browse by Category
         </h3>
         <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-          Find exactly what you&apos;re looking for in our organized categories
+          Find exactly what you're looking for in our organized categories
         </p>
         <div className="w-16 h-px bg-black mx-auto mt-6"></div>
       </div>

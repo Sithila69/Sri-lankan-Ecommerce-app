@@ -5,7 +5,7 @@ export interface Category {
 }
 
 // Re-export the main Listing interface
-export type { Listing } from "./listing";
+export { Listing } from "./listing";
 
 export type SortOption =
   | "newest"

@@ -46,7 +46,7 @@ const OrdersPage: React.FC<OrdersPageProps> = ({
           <div className="text-center py-12">
             <ShoppingCart className="w-16 h-16 text-gray-400 mx-auto mb-4" />
             <p className="text-gray-500 text-lg mb-4">
-              You haven&apos;t placed any orders yet
+              You haven't placed any orders yet
             </p>
             <button
               onClick={() => setCurrentView("store")}
