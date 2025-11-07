@@ -113,7 +113,7 @@ const ItemNotFound: React.FC<ItemNotFoundProps> = ({
         {itemName && (
           <div className="mb-4">
             <p className="text-lg font-medium text-gray-700 mb-2">
-              "{itemName}"
+              &quot;{itemName}&quot;
             </p>
           </div>
         )}
@@ -195,7 +195,7 @@ const ItemNotFound: React.FC<ItemNotFoundProps> = ({
       {/* Help Text */}
       <div className="mt-12">
         <p className="text-xs text-gray-400">
-          Can't find what you're looking for?{" "}
+          Can&apos;t find what you&apos;re looking for?{" "}
           <a
             href="/contact"
             className="text-gray-600 hover:text-black transition-colors underline"

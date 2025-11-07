@@ -28,7 +28,6 @@ interface FavoritesPageProps {
 }
 
 const FavoritesPage: React.FC<FavoritesPageProps> = ({
-  currentView,
   setCurrentView,
   favorites,
   products,
@@ -53,7 +52,7 @@ const FavoritesPage: React.FC<FavoritesPageProps> = ({
           <div className="text-center py-12">
             <Heart className="w-16 h-16 text-gray-400 mx-auto mb-4" />
             <p className="text-gray-500 text-lg mb-4">
-              You don't have any favorites yet
+              You don&apos;t have any favorites yet
             </p>
             <button
               onClick={() => setCurrentView("store")}

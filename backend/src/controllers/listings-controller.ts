@@ -769,7 +769,20 @@ export const getListingDetails = async (
     }
 
     // Helper to get time and availability info for a single listing
-    const getTimeAndAvailabilityInfo = (listing: any) => {
+    const getTimeAndAvailabilityInfo = (listing: {
+      products?: Array<{
+        delivery_time_min: number;
+        delivery_time_max: number;
+        stock_quantity: number;
+      }>;
+      services?: Array<{
+        completion_time_min: number;
+        completion_time_max: number;
+        completion_time_unit: string;
+        service_type: string;
+        availability: boolean;
+      }>;
+    }) => {
       if (listing.products && listing.products.length > 0) {
         const product = listing.products[0];
         return {

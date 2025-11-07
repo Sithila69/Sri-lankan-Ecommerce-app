@@ -89,7 +89,7 @@ export interface DetailedListing
     large_url: string | null;
     display_order: number;
     is_primary: boolean;
-    file_size: BigInt;
+    file_size: bigint;
   }[];
   sellers: Seller & {
     business_type: string;

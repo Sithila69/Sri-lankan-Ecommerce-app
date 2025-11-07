@@ -1,10 +1,7 @@
 import { Listing } from "@/types";
 import {
   Heart,
-  MapPin,
-  Star,
   Share2,
-  Eye,
   ShoppingCart,
   Calendar,
   CalendarCheck,

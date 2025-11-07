@@ -138,7 +138,7 @@ const AccountPage: React.FC = () => {
                   Shopping Cart
                 </h3>
                 <p className="text-sm text-gray-600">
-                  Items you're ready to buy
+                  Items you&apos;re ready to buy
                 </p>
               </Link>
 
@@ -162,7 +162,7 @@ const AccountPage: React.FC = () => {
                   Browse Products
                 </h3>
                 <p className="text-sm text-gray-600">
-                  Find what you're looking for
+                  Find what you&apos;re looking for
                 </p>
               </Link>
 
@@ -175,7 +175,7 @@ const AccountPage: React.FC = () => {
                   Help & Support
                 </h3>
                 <p className="text-sm text-gray-600">
-                  Need help? We're here for you
+                  Need help? We&apos;re here for you
                 </p>
               </Link>
             </div>

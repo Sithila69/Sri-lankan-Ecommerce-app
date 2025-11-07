@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import { Eye, EyeOff, Mail, Lock, User, Phone, ArrowLeft } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, User, Phone } from "lucide-react";
 
 import Link from "next/link";
 import Header from "@/components/common/Header";
@@ -497,7 +497,7 @@ const RegisterPage: React.FC = () => {
                       <div>
                         <div className="text-center mb-4">
                           <p className="text-gray-600">
-                            We've sent a verification code to
+                            We&apos;ve sent a verification code to
                           </p>
                           <p className="font-medium text-black">
                             {formData.phone}
