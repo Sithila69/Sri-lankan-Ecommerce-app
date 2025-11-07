@@ -33,7 +33,7 @@ export const authenticateToken = (
 
     req.user = decoded as JwtPayload;
     next();
-  } catch (error) {
+  } catch {
     res.status(403).json({ error: "Invalid or expired token" });
     return;
   }
@@ -53,7 +53,7 @@ export const optionalAuth = (
       if (typeof decoded !== "string") {
         req.user = decoded as JwtPayload;
       }
-    } catch (error) {
+    } catch {
       // Token is invalid, but we continue without authentication
       req.user = undefined;
     }

@@ -29,7 +29,6 @@ const ListingDetailsPage = () => {
   useEffect(() => {
     if (!isValidType || !slug) {
       notFound();
-      return;
     }
 
     const fetchListing = async () => {

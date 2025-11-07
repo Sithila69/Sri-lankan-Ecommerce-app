@@ -11,6 +11,7 @@ import {
   Check,
 } from "lucide-react";
 import { Seller } from "./../../types/seller";
+import Image from "next/image";
 
 const SellerInfo: React.FC<{ seller: Seller }> = ({ seller }) => {
   const renderStars = (rating: number) => {
@@ -54,7 +55,7 @@ const SellerInfo: React.FC<{ seller: Seller }> = ({ seller }) => {
         <div className="flex items-start gap-4">
           <div className="relative">
             {seller?.logo_url ? (
-              <img
+              <Image
                 src={seller.logo_url}
                 alt={seller.business_name}
                 className="w-16 h-16 object-cover border border-gray-200"

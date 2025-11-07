@@ -14,7 +14,7 @@ import {
 import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
 import { checkAuthStatus, logout } from "@/utils/auth";
-import LoadingPage from "@/app/loading";
+import Image from "next/image";
 
 const Header: React.FC = () => {
   const [cartCount, setCartCount] = useState(0);
@@ -24,12 +24,12 @@ const Header: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [isAuthLoading, setIsAuthLoading] = useState(true);
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
-  const [isClient, setIsClient] = useState(false);
+  // const [isClient, setIsClient] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     // Set client flag to prevent hydration mismatch
-    setIsClient(true);
+    // setIsClient(true);
 
     // Function to get unique item count from localStorage
     const getCartCount = () => {
@@ -108,6 +108,19 @@ const Header: React.FC = () => {
     };
   }, []);
 
+  if (isAuthLoading) {
+    return (
+      <div className="fixed inset-0 bg-white z-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 mx-auto mb-6">
+            <div className="animate-spin rounded-full h-16 w-16 border-2 border-gray-200 border-t-black"></div>
+          </div>
+          <h2 className="text-xl font-light text-gray-900 mb-2">Loading...</h2>
+        </div>
+      </div>
+    );
+  }
+
   const handleLogout = async () => {
     try {
       // Call the proper logout function that handles backend logout
@@ -154,7 +167,7 @@ const Header: React.FC = () => {
             {/* Logo */}
             <div className="flex items-center">
               <Link href="/" className="flex items-center space-x-2">
-                <img
+                <Image
                   src="/images/base_logo_black.png"
                   alt="kadey.lk logo"
                   width={60}
@@ -406,7 +419,7 @@ const Header: React.FC = () => {
               href="/deals"
               className="text-sm text-gray-600 hover:text-black font-medium"
             >
-              Today's Deals
+              Today&apos;s Deals
             </Link>
             <Link
               href="/new-arrivals"

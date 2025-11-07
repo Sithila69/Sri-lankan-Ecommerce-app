@@ -15,7 +15,7 @@ const PORT = process.env.PORT || 4000;
 
 app.use(
   cors({
-    origin: ["http://localhost:3000", "http://localhost:3001"], // Add your frontend URLs
+    origin: ["http://localhost:3000", "http://localhost:3001"],
     credentials: true,
   })
 );
@@ -26,7 +26,7 @@ app.use("/products", productRoutes);
 app.use("/users", userRoutes);
 app.use("/listings", ListingRoutes);
 app.use("/categories", categoriesRoutes);
-app.use("/services", ServicesRoutes); // Assuming services are handled in the same route
+app.use("/services", ServicesRoutes);
 app.use("/customers", CustomerRoutes);
 
 app.listen(PORT, () => {

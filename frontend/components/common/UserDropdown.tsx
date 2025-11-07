@@ -1,7 +1,17 @@
 import React, { useState } from "react";
 import { User } from "lucide-react";
 
-const UserDropdown = ({ user, setCurrentView, onLogout }) => {
+interface UserDropdownProps {
+  user: { name: string };
+  setCurrentView: (view: string) => void;
+  onLogout: () => void;
+}
+
+const UserDropdown: React.FC<UserDropdownProps> = ({
+  user,
+  setCurrentView,
+  onLogout,
+}) => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (

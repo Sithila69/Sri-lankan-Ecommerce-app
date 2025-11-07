@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import { Mail, Lock, ArrowLeft } from "lucide-react";
+import { Mail, Lock } from "lucide-react";
 
 import Link from "next/link";
 import Header from "@/components/common/Header";
@@ -116,7 +116,7 @@ const ForgotPasswordPage: React.FC = () => {
                   Forgot Password?
                 </h1>
                 <p className="text-gray-600">
-                  No worries, we'll send you reset instructions
+                  No worries, we&apos;ll send you reset instructions
                 </p>
               </div>
 
@@ -131,7 +131,7 @@ const ForgotPasswordPage: React.FC = () => {
                   </div>
                   <div className="space-y-4">
                     <p className="text-sm text-gray-600">
-                      Didn't receive the email? Check your spam folder or{" "}
+                      Didn&apos;t receive the email? Check your spam folder or{" "}
                       <button
                         onClick={() => setResetLinkSent(false)}
                         className="text-black hover:underline font-medium"

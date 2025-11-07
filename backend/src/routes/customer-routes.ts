@@ -6,7 +6,7 @@ import {
   logoutCustomer,
   getAuthStatus,
 } from "../controllers/customer-controller";
-import { authenticateToken } from "../middleware/auth";
+import { authenticateToken, optionalAuth } from "../middleware/auth";
 
 const router = Router();
 
@@ -20,6 +20,6 @@ router.post("/login", loginCustomer);
 router.post("/logout", logoutCustomer);
 
 // GET /customers/auth-status
-router.get("/auth-status", authenticateToken, getAuthStatus);
+router.get("/auth-status", optionalAuth, getAuthStatus);
 
 export default router;

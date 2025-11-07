@@ -107,14 +107,20 @@ export const getAuthStatus = async (): Promise<{
 }> => {
   const baseURL = getBaseURL();
 
-  const response = await fetch(`${baseURL}/customers/auth-status`, {
-    method: "GET",
-    credentials: "include", // Include cookies in the request
-  });
+  try {
+    const response = await fetch(`${baseURL}/customers/auth-status`, {
+      method: "GET",
+      credentials: "include", // Include cookies in the request
+    });
 
-  if (!response.ok) {
+    if (!response.ok) {
+      return { authenticated: false };
+    }
+
+    return response.json();
+  } catch (error) {
+    // Network or other errors - return unauthenticated
+    console.error("Error checking authentication status:", error);
     return { authenticated: false };
   }
-
-  return response.json();
 };
