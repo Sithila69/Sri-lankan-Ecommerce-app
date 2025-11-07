@@ -11,18 +11,71 @@ import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
 import { logout } from "@/utils/auth";
 
-interface UserDropdownProps {
-  user: { name: string };
-  setCurrentView: (view: string) => void;
-  onLogout: () => void;
+interface UserData {
+  name: string;
+  email: string;
+  avatar?: string;
 }
 
-const UserDropdown: React.FC<UserDropdownProps> = ({
-  user,
-  setCurrentView,
-  onLogout,
-}) => {
-  const [isOpen, setIsOpen] = useState(false);
+interface UserDropdownProps {
+  userData?: UserData;
+  onLogout?: () => void;
+}
+
+const UserDropdown: React.FC<UserDropdownProps> = ({ userData, onLogout }) => {
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      setIsDropdownOpen(false);
+
+      // Notify parent component
+      if (onLogout) {
+        onLogout();
+      }
+
+      // Notify other components
+      window.dispatchEvent(new CustomEvent("authUpdated"));
+
+      // Redirect to home
+      window.location.href = "/";
+    } catch (error) {
+      console.error("Logout error:", error);
+      setIsDropdownOpen(false);
+      if (onLogout) {
+        onLogout();
+      }
+      window.dispatchEvent(new CustomEvent("authUpdated"));
+      window.location.href = "/";
+    }
+  };
+
+  const getInitials = (name: string) => {
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+  };
 
   return (
     <div className="relative" ref={dropdownRef}>

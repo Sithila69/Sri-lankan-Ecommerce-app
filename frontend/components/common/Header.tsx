@@ -1,9 +1,9 @@
 "use client";
 import { Heart, Search, ShoppingCart, Menu, X } from "lucide-react";
 import Link from "next/link";
-import { useState, useEffect, useRef } from "react";
-import { checkAuthStatus, logout } from "@/utils/auth";
-import Image from "next/image";
+import { useState, useEffect } from "react";
+import { checkAuthStatus } from "@/utils/auth";
+import UserDropdown from "./UserDropdown";
 
 const Header: React.FC = () => {
   const [cartCount, setCartCount] = useState(0);
@@ -11,15 +11,13 @@ const Header: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
-  const [isAuthLoading, setIsAuthLoading] = useState(true);
-  const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
-  // const [isClient, setIsClient] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const [userData, setUserData] = useState<{
+    name: string;
+    email: string;
+    avatar?: string;
+  } | null>(null);
 
   useEffect(() => {
-    // Set client flag to prevent hydration mismatch
-    // setIsClient(true);
-
     // Function to get unique item count from localStorage
     const getCartCount = () => {
       try {
@@ -91,41 +89,9 @@ const Header: React.FC = () => {
     };
   }, []);
 
-  if (isAuthLoading) {
-    return (
-      <div className="fixed inset-0 bg-white z-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 mx-auto mb-6">
-            <div className="animate-spin rounded-full h-16 w-16 border-2 border-gray-200 border-t-black"></div>
-          </div>
-          <h2 className="text-xl font-light text-gray-900 mb-2">Loading...</h2>
-        </div>
-      </div>
-    );
-  }
-
-  const handleLogout = async () => {
-    try {
-      // Call the proper logout function that handles backend logout
-      await logout();
-
-      // Update auth state
-      setIsAuthenticated(false);
-      setIsUserDropdownOpen(false);
-
-      // Notify other components
-      window.dispatchEvent(new CustomEvent("authUpdated"));
-
-      // Redirect to home
-      window.location.href = "/";
-    } catch (error) {
-      console.error("Logout error:", error);
-      // Even if logout fails, update local state and redirect
-      setIsAuthenticated(false);
-      setIsUserDropdownOpen(false);
-      window.dispatchEvent(new CustomEvent("authUpdated"));
-      window.location.href = "/";
-    }
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    setUserData(null);
   };
 
   return (
@@ -136,7 +102,7 @@ const Header: React.FC = () => {
             {/* Logo */}
             <div className="flex items-center">
               <Link href="/" className="flex items-center space-x-2">
-                <Image
+                <img
                   src="/images/base_logo_black.png"
                   alt="kadey.lk logo"
                   width={60}
@@ -337,7 +303,7 @@ const Header: React.FC = () => {
               href="/deals"
               className="text-sm text-gray-600 hover:text-black font-medium"
             >
-              Today&apos;s Deals
+              Today's Deals
             </Link>
             <Link
               href="/new-arrivals"

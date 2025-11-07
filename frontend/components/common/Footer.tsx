@@ -6,7 +6,7 @@ const Footer: React.FC = () => {
           <div className="md:col-span-2">
             <h3 className="text-2xl font-light mb-6">Kadey.lk</h3>
             <p className="text-gray-300 text-lg leading-relaxed max-w-md">
-              Sri Lanka&apos;s premier marketplace connecting you with authentic
+              Sri Lanka's premier marketplace connecting you with authentic
               local businesses and quality products.
             </p>
           </div>

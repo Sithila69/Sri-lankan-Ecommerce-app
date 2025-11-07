@@ -1,15 +1,6 @@
-import { Search } from "lucide-react";
 import React from "react";
 
-type MobileMenuProps = {
-  setCurrentView: (view: string) => void;
-  setMobileMenuOpen: (isOpen: boolean) => void;
-};
-
-const MobileMenu: React.FC<MobileMenuProps> = ({
-  setCurrentView,
-  setMobileMenuOpen,
-}) => {
+const MobileMenu = ({ setCurrentView, setMobileMenuOpen }) => {
   const categories = [
     { id: "all", name: "All Categories", icon: "🏪" },
     { id: "food", name: "Food & Beverages", icon: "🍰" },

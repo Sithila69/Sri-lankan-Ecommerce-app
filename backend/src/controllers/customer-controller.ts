@@ -93,12 +93,8 @@ export const registerCustomer = async (
       message: "Customer registered successfully",
       user_id: userInsert.id,
     });
-  } catch (error) {
-    if (error instanceof Error) {
-      console.error("Error registering customer:", error.message);
-    } else {
-      console.error("Unknown error:", error);
-    }
+  } catch (error: any) {
+    console.error("Error registering customer:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 };
@@ -152,14 +148,14 @@ export const loginCustomer = async (
         email: user.email,
         userType: user.user_type,
       },
-      process.env.JWT_SECRET as string,
+      process.env.JWT_SECRET || "your-secret-key",
       { expiresIn: "24h" }
     );
 
     // Set HTTP-only cookie
     res.cookie("authToken", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: process.env.NODE_ENV === "production", // Use HTTPS in production
       sameSite: "strict",
       maxAge: 24 * 60 * 60 * 1000, // 24 hours in milliseconds
       path: "/",
@@ -175,12 +171,8 @@ export const loginCustomer = async (
         user_type: user.user_type,
       },
     });
-  } catch (error) {
-    if (error instanceof Error) {
-      console.error("Error logging in customer:", error.message);
-    } else {
-      console.error("Unknown error:", error);
-    }
+  } catch (error: any) {
+    console.error("Error logging in customer:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 };
@@ -201,12 +193,8 @@ export const logoutCustomer = async (
     res.status(200).json({
       message: "Logout successful",
     });
-  } catch (error) {
-    if (error instanceof Error) {
-      console.error("Error logging out :", error.message);
-    } else {
-      console.error("Unknown error:", error);
-    }
+  } catch (error: any) {
+    console.error("Error logging out customer:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 };
@@ -224,9 +212,8 @@ export const getAuthStatus = async (
   res: Response
 ): Promise<void> => {
   try {
-    // If no user in request, return unauthenticated (not an error)
     if (!req.user) {
-      res.status(200).json({ authenticated: false });
+      res.status(401).json({ authenticated: false });
       return;
     }
 
@@ -238,9 +225,8 @@ export const getAuthStatus = async (
       .eq("user_type", "customer")
       .single();
 
-    // If user not found or inactive, return unauthenticated (not an error)
     if (userError || !user || !user.is_active) {
-      res.status(200).json({ authenticated: false });
+      res.status(401).json({ authenticated: false });
       return;
     }
 
@@ -254,13 +240,8 @@ export const getAuthStatus = async (
         user_type: user.user_type,
       },
     });
-  } catch (error) {
-    // Only log actual server errors, not authentication failures
-    if (error instanceof Error) {
-      console.error("Error checking auth status:", error.message);
-    } else {
-      console.error("Unknown error:", error);
-    }
+  } catch (error: any) {
+    console.error("Error checking auth status:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 };
