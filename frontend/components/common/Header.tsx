@@ -1,16 +1,5 @@
 "use client";
-import {
-  Heart,
-  Search,
-  ShoppingCart,
-  User,
-  Menu,
-  X,
-  ChevronDown,
-  LogOut,
-  Settings,
-  Package,
-} from "lucide-react";
+import { Heart, Search, ShoppingCart, Menu, X } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
 import { checkAuthStatus, logout } from "@/utils/auth";
@@ -48,18 +37,25 @@ const Header: React.FC = () => {
       }
     };
 
-    // Check authentication status
+    // Check authentication status and get user data
     const checkAuth = async () => {
       try {
-        // Add a small delay to ensure loading state is visible
-        await new Promise((resolve) => setTimeout(resolve, 100));
         const authStatus = await checkAuthStatus();
         setIsAuthenticated(authStatus.authenticated);
+
+        if (authStatus.authenticated && authStatus.user) {
+          setUserData({
+            name: authStatus.user.first_name,
+            email: authStatus.user.email,
+            // avatar: authStatus.user.avatar,
+          });
+        } else {
+          setUserData(null);
+        }
       } catch (error) {
         console.error("Auth check error:", error);
         setIsAuthenticated(false);
-      } finally {
-        setIsAuthLoading(false);
+        setUserData(null);
       }
     };
 
@@ -88,23 +84,10 @@ const Header: React.FC = () => {
     // Custom event for auth updates
     window.addEventListener("authUpdated", handleAuthUpdate);
 
-    // Handle clicks outside dropdown
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
-        setIsUserDropdownOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-
     return () => {
       window.removeEventListener("storage", handleCartUpdate);
       window.removeEventListener("cartUpdated", handleCartUpdate);
       window.removeEventListener("authUpdated", handleAuthUpdate);
-      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
 
@@ -144,20 +127,6 @@ const Header: React.FC = () => {
       window.location.href = "/";
     }
   };
-
-  // Show full screen loader while checking auth
-  // if (!isClient || isAuthLoading || isAuthenticated === null) {
-  //   return (
-  //     <div className="fixed inset-0 bg-white z-50 flex items-center justify-center">
-  //       <div className="text-center">
-  //         <div className="w-16 h-16 mx-auto mb-6">
-  //           <div className="animate-spin rounded-full h-16 w-16 border-2 border-gray-200 border-t-black"></div>
-  //         </div>
-  //         <h2 className="text-xl font-light text-gray-900 mb-2">Loading...</h2>
-  //       </div>
-  //     </div>
-  //   );
-  // }
 
   return (
     <>
@@ -215,63 +184,10 @@ const Header: React.FC = () => {
                   </button>
                 </Link>
               ) : (
-                <div className="relative" ref={dropdownRef}>
-                  <button
-                    onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
-                    className="flex items-center p-3 hover:bg-gray-50 text-gray-600 hover:text-black transition-colors"
-                  >
-                    <User className="w-5 h-5" />
-                    <ChevronDown className="w-3 h-3 ml-1" />
-                  </button>
-
-                  {/* Dropdown Menu */}
-                  {isUserDropdownOpen && (
-                    <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 shadow-lg z-50">
-                      <div className="py-2">
-                        <Link
-                          href="/account"
-                          className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                          onClick={() => setIsUserDropdownOpen(false)}
-                        >
-                          <User className="w-4 h-4 mr-3" />
-                          My Account
-                        </Link>
-                        <Link
-                          href="/account/orders"
-                          className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                          onClick={() => setIsUserDropdownOpen(false)}
-                        >
-                          <Package className="w-4 h-4 mr-3" />
-                          My Orders
-                        </Link>
-                        <Link
-                          href="/wishlist"
-                          className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                          onClick={() => setIsUserDropdownOpen(false)}
-                        >
-                          <Heart className="w-4 h-4 mr-3" />
-                          Wishlist
-                        </Link>
-                        <Link
-                          href="/account/settings"
-                          className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                          onClick={() => setIsUserDropdownOpen(false)}
-                        >
-                          <Settings className="w-4 h-4 mr-3" />
-                          Settings
-                        </Link>
-                        <hr className="my-2 border-gray-200" />
-                        <button
-                          onClick={handleLogout}
-                          className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
-                        >
-                          <LogOut className="w-4 h-4 mr-3" />
-                          Sign Out
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
+                <UserDropdown
+                  userData={userData || undefined}
+                  onLogout={handleLogout}
+                />
               )}
             </div>
             {/* Mobile Actions */}
@@ -388,12 +304,14 @@ const Header: React.FC = () => {
               >
                 Support
               </Link>
-              <button
-                onClick={handleLogout}
-                className="block   py-2 font-medium text-red-600 "
-              >
-                Sign Out
-              </button>
+              {isAuthenticated && (
+                <button
+                  onClick={handleLogout}
+                  className="block py-2 font-medium text-red-600"
+                >
+                  Sign Out
+                </button>
+              )}
             </div>
           </div>
         )}
